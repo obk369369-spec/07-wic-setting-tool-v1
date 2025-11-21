@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WIC 7번 세팅 도구 — 도구 카드 생성기</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 16px;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    h2 {
+      font-size: 16px;
+      margin-top: 16px;
+      margin-bottom: 4px;
+    }
+    .section {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #ffffff;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    button {
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+    }
+    button:hover {
+      background: #e9e9e9;
+    }
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fafafa;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #888;
+      background: #fff;
+    }
+    .small {
+      font-size: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <!-- 📘 범용 지시문 (요약·내장 버전) -->
+  <div class="section">
+    <h1>WIC 7번 세팅 도구 — 도구 카드 관리</h1>
+    <p class="small">
+      이 도구는 WIC 각 도구의 <strong>세팅 뼈대</strong>를 만들고,
+      <strong>GitHub/Deno 업로드 주소</strong>를 자동으로 만들어 주는 화면형 세팅 도구다.
+      화면에 보이는 입력창·버튼·카드·텍스트만 실제 동작으로 인정된다.
+    </p>
+  </div>
+
+  <!-- ① 업로드 환경 기본 설정 -->
+  <div class="section">
+    <h2>① 업로드 환경 설정 (한 번만 입력)</h2>
+    <label for="githubBase">GitHub 업로드 기본 경로</label>
+    <input id="githubBase" type="text"
+           placeholder="예: https://github.com/USER/REPO/tree/main/tools" />
+
+    <label for="denoBase">Deno 프로젝트 기본 경로</label>
+    <input id="denoBase" type="text"
+           placeholder="예: https://dash.deno.com/projects/PROJECT-NAME" />
+
+    <p class="small">
+      위 두 줄은 전체 공통값이다. 한 번 입력해 두면, 아래에서 만드는 모든 도구 카드가
+      이 값을 이용해 업로드용 주소 텍스트를 자동 생성한다.
+    </p>
+  </div>
+
+  <!-- ② 한 줄 지시로 도구 카드 생성 -->
+  <div class="section">
+    <h2>② 한 줄 지시로 도구 카드 생성</h2>
+    <label for="singleLine">도구 한 줄 지시</label>
+    <textarea id="singleLine"
+      placeholder="형식: 도구 이름 / 목적 / (선택) 입력·출력&#10;예: 세팅 도구 / WIC 도구들의 화면형 세팅 뼈대 + 자동 링크 블록 생성 / 입력: 한 줄 지시 · 출력: 카드와 링크"></textarea>
+    <button type="button" onclick="addToolCard()">도구 카드 생성</button>
+    <p class="small">
+      사용자는 가능하면 이 한 줄만 입력한다.
+      나머지(도구 카드, 링크, 상태표시, 정리본)는 세팅 도구가 자동으로 만든다.
+    </p>
+  </div>
+
+  <!-- ③ 도구 카드 리스트 -->
+  <div class="section">
+    <h2>③ 도구 카드 목록</h2>
+    <div id="cards" class="cards"></div>
+    <p class="small">
+      각 카드는 ① 이름·목적·입력·출력 ② GitHub/Deno 업로드 주소
+      ③ 업로드 상태 ④ 테스트 체크리스트를 가진다.
+      이 카드들을 기준으로 1번~9번 및 이후 도구들을 한눈에 관리한다.
+    </p>
+  </div>
+
+  <!-- ④ 정리본 (근거 요약) -->
+  <div class="section">
+    <h2>④ 정리본 (도구 목록·업로드 상태 요약)</h2>
+    <textarea id="summary" placeholder="카드를 만들면 여기 정리본이 자동 갱신된다."></textarea>
+    <button type="button" onclick="updateSummary()">정리본 수동 갱신</button>
+    <p class="small">
+      이 텍스트는 Word·TXT·GitHub README 등에 복사해서
+      “어떤 도구가 어디까지 올라갔는지” 기록용으로 사용한다.
+    </p>
+  </div>
+
+  <script>
+    // Ⅰ. 자동 전파·투명 규칙 중: 화면에 보이는 공개 로직만 사용
+
+    // “도구 이름” → URL용 slug 텍스트 (화면에 보이는 규칙만 사용)
+    function slugify(name) {
+      let s = name.trim().toLowerCase();
+      s = s.replace(/[^\w\s-]/g, "");   // 영문자/숫자/밑줄/공백/대시만 남김
+      s = s.replace(/\s+/g, "-");      // 공백 → 대시
+      if (!s) s = "tool";
+      return s;
+    }
+
+    // “도구 이름 / 목적 / (입력·출력)” 형식 파싱 (완전 공개 로직)
+    function parseSingleLine(line) {
+      const parts = line.split("/").map(p => p.trim()).filter(p => p.length > 0);
+      const name = parts[0] || "도구 이름 미입력";
+      const purpose = parts[1] || "도구 목적 미입력";
+      const io = parts[2] || "입력·출력 미입력(필요 시 수정)";
+      return { name, purpose, io };
+    }
+
+    // 도구 카드 생성
+    function addToolCard() {
+      const line = document.getElementById("singleLine").value.trim();
+      if (!line) {
+        alert("도구 한 줄 지시를 먼저 입력해 주세요.");
+        return;
+      }
+
+      const { name, purpose, io } = parseSingleLine(line);
+      const githubBase = document.getElementById("githubBase").value.trim();
+      const denoBase = document.getElementById("denoBase").value.trim();
+      const slug = slugify(name);
+      const cardsContainer = document.getElementById("cards");
+      const index = cardsContainer.children.length + 1;
+
+      const githubUrl = githubBase
+        ? githubBase.replace(/\/+$/,"") + "/" + slug + ".html"
+        : "GitHub 경로 미설정 (위에서 기본 경로를 먼저 입력)";
+      const denoUrl = denoBase
+        ? denoBase.replace(/\/+$/,"") + "?tool=" + encodeURIComponent(slug)
+        : "Deno 경로 미설정 (위에서 기본 경로를 먼저 입력)";
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">도구 #${index} — ${name}</div>
+          <div class="badge">세팅 카드</div>
+        </div>
+        <div>
+          <p><strong>목적:</strong> ${purpose}</p>
+          <p><strong>입력·출력:</strong> ${io}</p>
+        </div>
+        <div>
+          <label>GitHub 업로드 주소</label>
+          <input type="text" class="github-url" value="${githubUrl}" />
+          <label>Deno 업로드 주소</label>
+          <input type="text" class="deno-url" value="${denoUrl}" />
+        </div>
+        <div>
+          <label>업로드 상태</label>
+          <select class="status-select">
+            <option value="미업로드">□ 미업로드</option>
+            <option value="GitHub 완료">■ GitHub 업로드 완료</option>
+            <option value="Deno 완료">■ Deno 업로드 완료</option>
+            <option value="양쪽 완료">■ GitHub + Deno 업로드 완료</option>
+          </select>
+        </div>
+        <div>
+          <label>테스트·검증 체크리스트</label>
+          <ul class="small">
+            <li>① 화면 뼈대: 입력창·버튼·출력 영역이 모두 보이는가?</li>
+            <li>② 필수 기능: 기본 입력 → 출력 흐름이 끊김 없이 동작하는가?</li>
+            <li>③ 오류 처리: 잘못된 입력을 넣었을 때도 화면이 깨지지 않는가?</li>
+            <li>④ 엣지 케이스: 빈 값·긴 텍스트 등에서도 흐름이 유지되는가?</li>
+            <li>⑤ 정리본: 도구 이름·상태·주소가 요약에 잘 반영되는가?</li>
+          </ul>
+        </div>
+      `;
+
+      const statusSelect = card.querySelector(".status-select");
+      statusSelect.addEventListener("change", updateSummary);
+
+      cardsContainer.appendChild(card);
+      document.getElementById("singleLine").value = "";
+      updateSummary();
+    }
+
+    // 정리본 갱신
+    function updateSummary() {
+      const cardsContainer = document.getElementById("cards");
+      const summaryLines = [];
+      const githubBase = document.getElementById("githubBase").value.trim();
+      const denoBase = document.getElementById("denoBase").value.trim();
+
+      summaryLines.push("[WIC 7번 세팅 도구 — 도구 목록 요약]");
+      summaryLines.push(`GitHub 기본 경로: ${githubBase || "미설정"}`);
+      summaryLines.push(`Deno 기본 경로: ${denoBase || "미설정"}`);
+      summaryLines.push("");
+
+      Array.from(cardsContainer.children).forEach((card, idx) => {
+        const title = card.querySelector(".card-title").textContent.trim();
+        const status = card.querySelector(".status-select").value;
+        const githubUrl = card.querySelector(".github-url").value.trim();
+        const denoUrl = card.querySelector(".deno-url").value.trim();
+
+        summaryLines.push(`도구 #${idx + 1}: ${title}`);
+        summaryLines.push(`- 업로드 상태: ${status}`);
+        summaryLines.push(`- GitHub: ${githubUrl}`);
+        summaryLines.push(`- Deno: ${denoUrl}`);
+        summaryLines.push("");
+      });
+
+      document.getElementById("summary").value = summaryLines.join("\n");
+    }
+  </script>
+</body>
+</html>

@@ -41,7 +41,8 @@
       display: block;
       margin-bottom: 4px;
     }
-    textarea, input[type="text"] {
+    textarea,
+    input[type="text"] {
       width: 100%;
       padding: 8px;
       border-radius: 8px;
@@ -49,7 +50,8 @@
       font-size: 13px;
       resize: vertical;
     }
-    textarea:focus, input[type="text"]:focus {
+    textarea:focus,
+    input[type="text"]:focus {
       outline: none;
       border-color: #2563eb;
       box-shadow: 0 0 0 1px #2563eb22;
@@ -205,7 +207,7 @@
   <h1>WIC 세팅 도구 v1</h1>
   <div class="subtitle">
     도구 이름/목적을 붙여넣고 카드 생성 후, GitHub·Deno 주소를 한 번만 넣으면<br />
-    이후에는 테스트 버튼과 자동 테스트가 카드에서 바로 상태를 보여줍니다.
+    이후에는 세팅 도구가 브라우저에 저장해 두고 테스트·로그에 사용합니다.
   </div>
 
   <!-- 상단 입력 패널 -->
@@ -244,7 +246,7 @@
       </div>
       <div style="font-size:11px; color:#6b7280;">
         · 카드 생성 시 GitHub/Deno 칸은 위 기본 주소를 그대로 가져옵니다.<br />
-        · 각 도구마다 실제 주소를 한 번만 붙여 넣으면, 세팅 도구가 이후 상태를 기억합니다.
+        · 각 도구마다 실제 주소를 한 번만 입력·저장하면, 다시 열어도 그대로 유지됩니다.
       </div>
     </div>
   </div>
@@ -265,6 +267,8 @@
 </div>
 
 <script>
+  const STORAGE_KEY = 'wic_setting_tool_urls_v1';
+
   const toolsInput = document.getElementById('toolsInput');
   const githubBaseInput = document.getElementById('githubBase');
   const denoBaseInput = document.getElementById('denoBase');
@@ -273,6 +277,27 @@
   const autoTestInfo = document.getElementById('autoTestInfo');
 
   let autoTestTimer = null;
+  let urlMappings = loadMappings();
+
+  function loadMappings() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      const obj = JSON.parse(raw);
+      if (typeof obj !== 'object' || obj === null) return {};
+      return obj;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveMappings() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(urlMappings));
+    } catch (e) {
+      // localStorage 에러는 조용히 무시
+    }
+  }
 
   function parseToolsInput(text) {
     const lines = text.split('\n');
@@ -326,10 +351,25 @@
     }
   }
 
+  function checkUrls(githubUrl, denoUrl) {
+    const problems = [];
+    if (!githubUrl && !denoUrl) {
+      problems.push('GitHub/Deno 주소가 모두 비어 있습니다.');
+    } else {
+      if (githubUrl && !githubUrl.startsWith('http')) {
+        problems.push('GitHub URL 형식이 잘못되었습니다.');
+      }
+      if (denoUrl && !denoUrl.startsWith('http')) {
+        problems.push('Deno URL 형식이 잘못되었습니다.');
+      }
+    }
+    return problems;
+  }
+
   function createCard(tool, githubBase, denoBase) {
     const card = document.createElement('div');
     card.className = 'card';
-    card.dataset.toolId = tool.id;
+    card.dataset.toolName = tool.name;
 
     const header = document.createElement('div');
     header.className = 'card-header';
@@ -340,7 +380,7 @@
 
     const tag = document.createElement('div');
     tag.className = 'card-tag';
-    tag.textContent = `도구 #${tool.id}`;
+    tag.textContent = `도구`;
 
     header.appendChild(title);
     header.appendChild(tag);
@@ -379,7 +419,30 @@
     const githubInput = document.createElement('input');
     githubInput.type = 'text';
     githubInput.placeholder = '이 도구의 GitHub 주소';
-    if (githubBase) githubInput.value = githubBase;
+
+    const denoLabel = document.createElement('div');
+    denoLabel.className = 'small-label';
+    denoLabel.textContent = 'Deno 업로드 주소';
+
+    const denoRow = document.createElement('div');
+    denoRow.className = 'url-row';
+    const denoInput = document.createElement('input');
+    denoInput.type = 'text';
+    denoInput.placeholder = '이 도구의 Deno 주소';
+
+    // 저장된 매핑이 있으면 먼저 사용
+    const mapping = urlMappings[tool.name] || {};
+    if (mapping.github) {
+      githubInput.value = mapping.github;
+    } else if (githubBase) {
+      githubInput.value = githubBase;
+    }
+    if (mapping.deno) {
+      denoInput.value = mapping.deno;
+    } else if (denoBase) {
+      denoInput.value = denoBase;
+    }
+
     const githubBtn = document.createElement('button');
     githubBtn.className = 'btn-github';
     githubBtn.textContent = 'GitHub';
@@ -394,16 +457,6 @@
     githubRow.appendChild(githubInput);
     githubRow.appendChild(githubBtn);
 
-    const denoLabel = document.createElement('div');
-    denoLabel.className = 'small-label';
-    denoLabel.textContent = 'Deno 업로드 주소';
-
-    const denoRow = document.createElement('div');
-    denoRow.className = 'url-row';
-    const denoInput = document.createElement('input');
-    denoInput.type = 'text';
-    denoInput.placeholder = '이 도구의 Deno 주소';
-    if (denoBase) denoInput.value = denoBase;
     const denoBtn = document.createElement('button');
     denoBtn.className = 'btn-deno';
     denoBtn.textContent = 'Deno';
@@ -425,6 +478,21 @@
     const actionRow = document.createElement('div');
     actionRow.className = 'action-row';
 
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-secondary';
+    saveBtn.textContent = '주소 저장';
+    saveBtn.onclick = () => {
+      const g = githubInput.value.trim();
+      const d = denoInput.value.trim();
+      if (!urlMappings[tool.name]) {
+        urlMappings[tool.name] = {};
+      }
+      urlMappings[tool.name].github = g;
+      urlMappings[tool.name].deno = d;
+      saveMappings();
+      appendLog(logBox, '주소 저장 완료.');
+    };
+
     const testBtn = document.createElement('button');
     testBtn.className = 'btn-secondary';
     testBtn.textContent = '테스트';
@@ -432,6 +500,7 @@
       runManualTest(card);
     };
 
+    actionRow.appendChild(saveBtn);
     actionRow.appendChild(testBtn);
 
     const metaRow = document.createElement('div');
@@ -439,7 +508,7 @@
     const lastTestSpan = document.createElement('span');
     lastTestSpan.textContent = '마지막 테스트: 없음';
     const toolIdSpan = document.createElement('span');
-    toolIdSpan.textContent = `ID: ${tool.id}`;
+    toolIdSpan.textContent = tool.name;
     metaRow.appendChild(lastTestSpan);
     metaRow.appendChild(toolIdSpan);
 
@@ -466,21 +535,6 @@
     return card;
   }
 
-  function checkUrls(githubUrl, denoUrl) {
-    const problems = [];
-    if (!githubUrl && !denoUrl) {
-      problems.push('GitHub/Deno 주소가 모두 비어 있습니다.');
-    } else {
-      if (githubUrl && !githubUrl.startsWith('http')) {
-        problems.push('GitHub URL 형식이 잘못되었습니다.');
-      }
-      if (denoUrl && !denoUrl.startsWith('http')) {
-        problems.push('Deno URL 형식이 잘못되었습니다.');
-      }
-    }
-    return problems;
-  }
-
   function runManualTest(card) {
     const statusDot = card._statusDot;
     const statusText = card._statusText;
@@ -502,7 +556,7 @@
       const problems = checkUrls(githubUrl, denoUrl);
       if (problems.length === 0) {
         setStatus(statusDot, statusText, statusDetail, 'ok');
-        statusDetail.textContent = '형식 기준 통과. 실제 404 여부는 해당 페이지에서 확인하세요.';
+        statusDetail.textContent = '형식 기준 통과. 실제 동작은 해당 페이지에서 확인하세요.';
         appendLog(logBox, '주소 형식 기준 테스트 통과.');
       } else {
         setStatus(statusDot, statusText, statusDetail, 'error');
@@ -557,7 +611,8 @@
   function startAutoTestLoop() {
     if (autoTestTimer) clearInterval(autoTestTimer);
     runAutoTestOnce();
-    autoTestTimer = setInterval(runAutoTestOnce, 600000); // 10분
+    // 10분마다
+    autoTestTimer = setInterval(runAutoTestOnce, 600000);
   }
 
   generateBtn.addEventListener('click', () => {
@@ -575,6 +630,11 @@
     });
     startAutoTestLoop();
   });
+
+  // 페이지 처음 열릴 때도 자동 테스트 루프 준비
+  if (cardsContainer.children.length > 0) {
+    startAutoTestLoop();
+  }
 </script>
 </body>
 </html>

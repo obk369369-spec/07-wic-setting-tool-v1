@@ -159,6 +159,10 @@
       font-size: 11px;
       color: #6b7280;
     }
+    .time-span {
+      font-size: 11px;
+      color: #6b7280;
+    }
     .autosave {
       font-size: 11px;
       color: #4b5563;
@@ -283,7 +287,6 @@
         };
         state.cards.push(card);
       } else {
-        // 이전 상태에 upload가 없었던 경우 대비
         if (card.upload === undefined) card.upload = "";
       }
       return card;
@@ -320,10 +323,9 @@
         .map(x => x.trim())
         .filter(x => x.length > 0);
 
-      // 번호 추출 + 자동 정렬
       const items = lines.map((line, idx) => {
-        const m = line.match(/^(\d+)\s*번?/); // "18번", "18 번" 둘 다 인식
-        const num = m ? parseInt(m[1], 10) : 10000 + idx; // 번호 없으면 뒤로
+        const m = line.match(/^(\d+)\s*번?/);
+        const num = m ? parseInt(m[1], 10) : 10000 + idx;
         return { name: line, num, idx };
       });
 
@@ -433,7 +435,7 @@
         stSpan.textContent = "상태: " + statusLabel;
 
         const timeSpan = document.createElement("span");
-        timeSpan.className = "small-text";
+        timeSpan.className = "time-span";
         timeSpan.style.marginLeft = "6px";
         timeSpan.textContent = c.last
           ? "(마지막 테스트: " + c.last + ")"
@@ -457,7 +459,7 @@
             Array.from(errArea.querySelectorAll(".badge")).forEach(b =>
               b.classList.toggle("selected", b.textContent === choice)
             );
-            saveState();
+            scheduleSaveState();
           };
           errArea.appendChild(badge);
         });
@@ -474,7 +476,7 @@
           c.github = ghInput.value.trim();
           c.deno = deInput.value.trim();
           c.upload = upInput.value.trim();
-          saveState();
+          scheduleSaveState();
         };
 
         const fixBtn = document.createElement("button");
@@ -487,7 +489,7 @@
           c.status = "대기";
           c.log = "자동 수정 실행: " + now();
           c.last = now();
-          saveState();
+          scheduleSaveState();
           buildCards();
         };
 
@@ -517,11 +519,25 @@
         logArea.textContent = c.log || "로그: 아직 없음";
         card.appendChild(logArea);
 
+        // --- 카드 입력값도 즉시 자동 저장 ---
+        ghInput.addEventListener("input", () => {
+          c.github = ghInput.value.trim();
+          scheduleSaveState();
+        });
+        deInput.addEventListener("input", () => {
+          c.deno = deInput.value.trim();
+          scheduleSaveState();
+        });
+        upInput.addEventListener("input", () => {
+          c.upload = upInput.value.trim();
+          scheduleSaveState();
+        });
+
         container.appendChild(card);
       });
 
       state.cards = state.cards.filter(c => usedNames.includes(c.name));
-      saveState();
+      scheduleSaveState();
     }
 
     // ----- 테스트 -----
@@ -549,7 +565,7 @@
       timeSpan.textContent = "(마지막 테스트: " + c.last + ")";
       logArea.textContent = c.log;
 
-      saveState();
+      scheduleSaveState();
     }
 
     function testAll() {
@@ -564,8 +580,7 @@
         const statusSpan = card.querySelector(
           ".status-ok, .status-warn, .status-neutral"
         );
-        // statusSpan 바로 다음이 timeSpan (작은 글씨)
-        const timeSpan = statusSpan.nextSibling;
+        const timeSpan = card.querySelector(".time-span");
         const logArea = card.querySelector(".log");
         runSingleTest(name, ghInput, deInput, upInput, statusSpan, timeSpan, logArea);
       });

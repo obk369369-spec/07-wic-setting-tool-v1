@@ -339,17 +339,21 @@
 
       const usedNames = [];
 
+      // ★ 화면에 보이는 입력값을 직접 읽어서 사용 (state 의존 최소화)
+      const githubBaseValue = (document.getElementById("githubBase").value || "").replace(/\/+$/, "");
+      const denoBaseValue   = (document.getElementById("denoBase").value   || "").replace(/\/+$/, "");
+
       items.forEach((item, sortedIndex) => {
         const name = item.name;
         usedNames.push(name);
         const c = ensureCard(name);
 
-        // ★ GitHub/Deno 기본 주소를 값으로 자동 세팅 (비어 있을 때만)
-        if (!c.github && state.githubBase) {
-          c.github = state.githubBase.replace(/\/+$/, "") + "/";
+        // GitHub/Deno 자동 기본값 세팅 (비어 있을 때만)
+        if (!c.github && githubBaseValue) {
+          c.github = githubBaseValue + "/";
         }
-        if (!c.deno && state.denoBase) {
-          c.deno = state.denoBase.replace(/\/+$/, "") + "/";
+        if (!c.deno && denoBaseValue) {
+          c.deno = denoBaseValue + "/";
         }
 
         const card = document.createElement("div");

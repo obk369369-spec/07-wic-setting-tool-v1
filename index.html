@@ -252,7 +252,7 @@
       saveTimer = setTimeout(() => {
         saveState();
         saveTimer = null;
-      }, 500); // 0.5초 지연 저장
+      }, 500);
     }
 
     function loadState() {
@@ -344,6 +344,14 @@
         usedNames.push(name);
         const c = ensureCard(name);
 
+        // ★ GitHub/Deno 기본 주소를 값으로 자동 세팅 (비어 있을 때만)
+        if (!c.github && state.githubBase) {
+          c.github = state.githubBase.replace(/\/+$/, "") + "/";
+        }
+        if (!c.deno && state.denoBase) {
+          c.deno = state.denoBase.replace(/\/+$/, "") + "/";
+        }
+
         const card = document.createElement("div");
         card.className = "card";
         card.dataset.name = name;
@@ -372,9 +380,7 @@
         ghRow.className = "card-row";
         const ghInput = document.createElement("input");
         ghInput.type = "text";
-        ghInput.placeholder = state.githubBase
-          ? state.githubBase + "/…"
-          : "이 도구 GitHub 주소";
+        ghInput.placeholder = "이 도구 GitHub 주소";
         ghInput.value = c.github || "";
         const ghBtn = document.createElement("button");
         ghBtn.className = "small";
@@ -392,9 +398,7 @@
         deRow.className = "card-row";
         const deInput = document.createElement("input");
         deInput.type = "text";
-        deInput.placeholder = state.denoBase
-          ? state.denoBase + "/…"
-          : "이 도구 Deno 설정/프로젝트 주소";
+        deInput.placeholder = "이 도구 Deno 설정/프로젝트 주소";
         deInput.value = c.deno || "";
         const deBtn = document.createElement("button");
         deBtn.className = "small";
@@ -519,7 +523,7 @@
         logArea.textContent = c.log || "로그: 아직 없음";
         card.appendChild(logArea);
 
-        // --- 카드 입력값도 즉시 자동 저장 ---
+        // 카드 입력값도 즉시 자동 저장
         ghInput.addEventListener("input", () => {
           c.github = ghInput.value.trim();
           scheduleSaveState();
@@ -617,7 +621,6 @@
         clearAll();
       };
 
-      // 입력시 0.5초 지연 자동 저장
       ["toolList", "githubBase", "denoBase"].forEach(id => {
         const el = document.getElementById(id);
         el.addEventListener("input", scheduleSaveState);

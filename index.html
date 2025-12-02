@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>WIC 세팅 도구 v2 — 카드형 세팅 & 안정화 버전 (업로드 주소 + 자동 테스트/수정)</title>
+  <title>WIC 세팅 도구 v2 — 카드형 세팅 & 안정화 버전</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -171,6 +171,7 @@
 </head>
 <body>
   <h1>WIC 세팅 도구 v2 (7번 도구)</h1>
+
   <div class="section">
     <div class="small-text">
       · 이 도구는 <strong>카드형 세팅 도구</strong>다.<br/>
@@ -339,7 +340,7 @@
 
       const usedNames = [];
 
-      // ★ 화면에 보이는 입력값을 직접 읽어서 사용 (state 의존 최소화)
+      // 화면에 보이는 입력값을 직접 읽어 사용
       const githubBaseValue = (document.getElementById("githubBase").value || "").replace(/\/+$/, "");
       const denoBaseValue   = (document.getElementById("denoBase").value   || "").replace(/\/+$/, "");
 
@@ -527,7 +528,7 @@
         logArea.textContent = c.log || "로그: 아직 없음";
         card.appendChild(logArea);
 
-        // 카드 입력값도 즉시 자동 저장
+        // 카드 입력값 자동 저장
         ghInput.addEventListener("input", () => {
           c.github = ghInput.value.trim();
           scheduleSaveState();

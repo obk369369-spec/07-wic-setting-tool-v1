@@ -223,8 +223,9 @@
 
     let state = {
       toolListText: "",
-      githubBase: "",
-      denoBase: "",
+      // ★ 기본값을 코드에 고정
+      githubBase: "https://github.com/사용자명",
+      denoBase: "https://dash.deno.com/projects",
       cards: [] // { name, github, deno, upload, status, log, last, choice }
     };
 
@@ -263,9 +264,6 @@
         const obj = JSON.parse(raw);
         if (obj && typeof obj === "object") {
           state = Object.assign(state, obj);
-          document.getElementById("toolList").value = state.toolListText || "";
-          document.getElementById("githubBase").value = state.githubBase || "";
-          document.getElementById("denoBase").value = state.denoBase || "";
         }
       } catch (_) {
         // 무시
@@ -589,20 +587,28 @@
       localStorage.removeItem(STORAGE_KEY);
       state = {
         toolListText: "",
-        githubBase: "",
-        denoBase: "",
+             githubBase: "https://github.com/obk369369-spec",
+             denoBase: "https://dash.deno.com/projects",
         cards: []
       };
       document.getElementById("toolList").value = "";
-      document.getElementById("githubBase").value = "";
-      document.getElementById("denoBase").value = "";
+      document.getElementById("githubBase").value = state.githubBase;
+      document.getElementById("denoBase").value = state.denoBase;
       document.getElementById("cardsContainer").innerHTML = "";
       document.getElementById("autosaveStatus").textContent = "초기화 완료";
     }
 
     // ----- 초기화 -----
     document.addEventListener("DOMContentLoaded", () => {
+      // 저장된 상태 먼저 읽기
       loadState();
+
+      // 입력창에 현재 state 반영 (비어 있으면 기본값 유지)
+      document.getElementById("toolList").value = state.toolListText || "";
+      document.getElementById("githubBase").value = state.githubBase;
+      document.getElementById("denoBase").value = state.denoBase;
+
+
       buildCards();
 
       document.getElementById("buildCardsBtn").onclick = () => {

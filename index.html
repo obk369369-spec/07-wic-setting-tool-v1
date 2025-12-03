@@ -232,6 +232,16 @@
       return new Date().toLocaleTimeString("ko-KR", { hour12: false });
     }
 
+    // URL 보정용: http/https 없으면 https:// 붙이기
+    function normalizeUrl(u) {
+      u = (u || "").trim();
+      if (!u) return "";
+      if (!/^https?:\/\//i.test(u)) {
+        return "https://" + u;
+      }
+      return u;
+    }
+
     // ----- 저장 / 복원 -----
     function saveState() {
       state.toolListText = document.getElementById("toolList").value;
@@ -492,9 +502,17 @@
         fixBtn.className = "small";
         fixBtn.textContent = "자동 수정";
         fixBtn.onclick = () => {
-          c.github = ghInput.value.trim();
-          c.deno = deInput.value.trim();
-          c.upload = upInput.value.trim();
+          // 자동 보정: http 없는 주소에 https:// 붙이기
+          const g = normalizeUrl(ghInput.value);
+          const d = normalizeUrl(deInput.value);
+          const u = normalizeUrl(upInput.value);
+          ghInput.value = g;
+          deInput.value = d;
+          upInput.value = u;
+
+          c.github = g;
+          c.deno = d;
+          c.upload = u;
           c.status = "대기";
           c.log = "자동 수정 실행: " + now();
           c.last = now();
@@ -552,14 +570,20 @@
     // ----- 테스트 -----
     function runSingleTest(name, ghInput, deInput, upInput, statusSpan, timeSpan, logArea) {
       const c = ensureCard(name);
-      const g = ghInput.value;
-      const d = deInput.value;
-      const u = upInput.value;
+
+      // 자동 보정: http 없는 주소에 https:// 붙이기
+      const g = normalizeUrl(ghInput.value);
+      const d = normalizeUrl(deInput.value);
+      const u = normalizeUrl(upInput.value);
+      ghInput.value = g;
+      deInput.value = d;
+      upInput.value = u;
+
       const r = validateTriple(g, d, u);
 
-      c.github = (g || "").trim();
-      c.deno = (d || "").trim();
-      c.upload = (u || "").trim();
+      c.github = g;
+      c.deno = d;
+      c.upload = u;
       c.last = now();
       c.log = "자동 테스트: " + c.last + " / 결과: " + r.reason;
 

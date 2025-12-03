@@ -351,19 +351,21 @@
       const usedNames = [];
 
       // 화면에 보이는 입력값을 직접 읽어 사용
-      const githubBaseValue = (document.getElementById("githubBase").value || "").replace(/\/+$/, "");
-      const denoBaseValue   = (document.getElementById("denoBase").value   || "").replace(/\/+$/, "");
+      const githubBaseRaw = (document.getElementById("githubBase").value || "").trim();
+      const denoBaseRaw   = (document.getElementById("denoBase").value   || "").trim();
+      const githubBaseValue = githubBaseRaw.replace(/\/+$/, "");
+      const denoBaseValue   = denoBaseRaw.replace(/\/+$/, "");
 
       items.forEach((item, sortedIndex) => {
         const name = item.name;
         usedNames.push(name);
         const c = ensureCard(name);
 
-        // GitHub/Deno 자동 기본값 세팅 (비어 있을 때만)
-        if (!c.github && githubBaseValue) {
+        // ★ GitHub/Deno 자동 기본값 세팅 : 항상 덮어쓰기 (비어있을 때만 X)
+        if (githubBaseValue) {
           c.github = githubBaseValue + "/";
         }
-        if (!c.deno && denoBaseValue) {
+        if (denoBaseValue) {
           c.deno = denoBaseValue + "/";
         }
 

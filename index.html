@@ -350,11 +350,11 @@
         const c = ensureCard(name);
 
         // ★ GitHub/Deno 주소: 비어 있을 때만 기본 주소로 자동 채움 (이미 다른 주소 있으면 유지)
-        if (!c.github && githubBaseValue) {
-        // 도구 이름에서 앞의 번호(1,2,3...)를 이용해서 카드마다 다른 GitHub 주소 자동 생성
-        const numStr = String(item.num).padStart(2, "0"); // 1 -> "01", 2 -> "02"
-        c.github = githubBaseValue + "/" + numStr + "-";
-         }
+        // ★ GitHub/Deno 주소: 비어 있을 때만 기본 주소로 자동 채움 (이미 다른 주소 있으면 유지)
+             if (!c.github && githubBaseValue) {
+               c.github = githubBaseValue + "/";
+                }
+
 
         if (!c.deno && denoBaseValue) {
           c.deno = denoBaseValue + "/";

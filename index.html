@@ -232,8 +232,8 @@
       return new Date().toLocaleTimeString("ko-KR", { hour12: false });
     }
 
-    // URL 보정용: http/https 없으면 https:// 붙이기
-    function normalizeUrl(u) {
+    // 업로드 주소용: http/https 없으면 https:// 붙이기 (GitHub/Deno는 건드리지 않음)
+    function normalizeUploadUrl(u) {
       u = (u || "").trim();
       if (!u) return "";
       if (!/^https?:\/\//i.test(u)) {
@@ -350,7 +350,7 @@
 
       const usedNames = [];
 
-      // 화면에 보이는 입력값을 직접 읽어 사용
+      // 화면에 보이는 값에서 바로 읽어서, 모든 카드에 강제 적용
       const githubBaseRaw = (document.getElementById("githubBase").value || "").trim();
       const denoBaseRaw   = (document.getElementById("denoBase").value   || "").trim();
       const githubBaseValue = githubBaseRaw.replace(/\/+$/, "");
@@ -361,13 +361,9 @@
         usedNames.push(name);
         const c = ensureCard(name);
 
-        // ★ GitHub/Deno 자동 기본값 세팅 : 항상 덮어쓰기 (비어있을 때만 X)
-        if (githubBaseValue) {
-          c.github = githubBaseValue + "/";
-        }
-        if (denoBaseValue) {
-          c.deno = denoBaseValue + "/";
-        }
+        // GitHub/Deno 주소를 항상 덮어쓰기 (자동 채움)
+        c.github = githubBaseValue ? githubBaseValue + "/" : "";
+        c.deno   = denoBaseValue   ? denoBaseValue   + "/" : "";
 
         const card = document.createElement("div");
         card.className = "card";
@@ -504,10 +500,10 @@
         fixBtn.className = "small";
         fixBtn.textContent = "자동 수정";
         fixBtn.onclick = () => {
-          // 자동 보정: http 없는 주소에 https:// 붙이기
-          const g = normalizeUrl(ghInput.value);
-          const d = normalizeUrl(deInput.value);
-          const u = normalizeUrl(upInput.value);
+          // 업로드 주소만 자동 보정
+          const g = ghInput.value.trim();
+          const d = deInput.value.trim();
+          const u = normalizeUploadUrl(upInput.value);
           ghInput.value = g;
           deInput.value = d;
           upInput.value = u;
@@ -573,10 +569,10 @@
     function runSingleTest(name, ghInput, deInput, upInput, statusSpan, timeSpan, logArea) {
       const c = ensureCard(name);
 
-      // 자동 보정: http 없는 주소에 https:// 붙이기
-      const g = normalizeUrl(ghInput.value);
-      const d = normalizeUrl(deInput.value);
-      const u = normalizeUrl(upInput.value);
+      // 업로드 주소만 자동 보정
+      const g = ghInput.value.trim();
+      const d = deInput.value.trim();
+      const u = normalizeUploadUrl(upInput.value);
       ghInput.value = g;
       deInput.value = d;
       upInput.value = u;

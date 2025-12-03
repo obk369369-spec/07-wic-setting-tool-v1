@@ -574,28 +574,27 @@ saveBtn.onclick = () => {
     }
   }
 
-  const r = validateTriple(g, d, u);
+const r = validateTriple(g, d, u);
 
-  c.github = g;
-  c.deno = d;
-  c.upload = u;
-  c.last = now();
-  c.log = "자동 테스트: " + c.last + " / 결과: " + r.reason;
+c.github = g;
+c.deno = d;
+c.upload = u;
+c.last = now();
+c.log = "자동 테스트: " + c.last + " / 결과: " + r.reason;
 
-  if (r.ok) {
-    c.status = "정상";
-    statusSpan.className = "status-ok";
-  } else {
-    c.status = "오류 가능";
-    statusSpan.className = "status-warn";
-  }
-  statusSpan.textContent = "상태: " + c.status;
-  timeSpan.textContent = "(마지막 테스트: " + c.last + ")";
-  logArea.textContent = c.log;
-
-  scheduleSaveState();
+if (r.ok) {
+  c.status = "정상";
+  statusSpan.className = "status-ok";
+} else {
+  c.status = "오류 가능";
+  statusSpan.className = "status-warn";
 }
+statusSpan.textContent = "상태: " + c.status;
+timeSpan.textContent = "(마지막 테스트: " + c.last + ")";
+logArea.textContent = c.log;
 
+scheduleSaveState();
+}
     
 
     function testAll() {

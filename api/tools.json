@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "1번 고객 자동화 안내서",
+    "status": "미연결",
+    "repoUrl": "https://github.com/.../tool-1",
+    "deployUrl": "https://1-guide...deno.net/",
+    "lastTest": null,
+    "lastResult": null,
+    "complexErrorCount": 0
+  },
+  {
+    "id": 7,
+    "name": "7번 세팅 도구",
+    "status": "정상",
+    "repoUrl": "https://github.com/.../tool-7-setup",
+    "deployUrl": "https://7-setup...deno.net/",
+    "lastTest": null,
+    "lastResult": "OK",
+    "complexErrorCount": 0
+  },
+  {
+    "id": 20,
+    "name": "20번 운영 매뉴얼",
+    "status": "오류",
+    "repoUrl": "https://github.com/.../tool-20-manual",
+    "deployUrl": "https://20-manual...deno.net/",
+    "lastTest": null,
+    "lastResult": "FAIL",
+    "complexErrorCount": 2
+  }
+]

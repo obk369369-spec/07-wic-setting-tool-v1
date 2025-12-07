@@ -3,92 +3,250 @@
 <head>
   <meta charset="UTF-8" />
   <title>7번 세팅 도구 · Setup & Monitor Center</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: system-ui; margin: 0; padding: 16px; background: #f5f5f5; }
-    h1 { margin-top: 0; font-size: 20px; }
-    .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .row { display: flex; flex-wrap: wrap; gap: 12px; }
-    .row > div { flex: 1 1 160px; min-width: 160px; }
-    .label { font-size: 12px; color: #666; }
-    .value { font-size: 14px; font-weight: 600; margin-top: 4px; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
-    .badge-ok { background: #e0f7e9; color: #027a3a; }
-    .badge-warn { background: #fff4e5; color: #b25e00; }
-    .badge-error { background: #ffe5e5; color: #b00020; }
-    button { padding: 6px 10px; font-size: 12px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-    button:hover { background: #f0f0f0; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    thead { background: #fafafa; }
-    th, td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: left; }
-    .status-cell { white-space: nowrap; }
-    .muted { color: #888; font-size: 12px; }
-    .chip { display: inline-block; padding: 2px 6px; border-radius: 8px; font-size: 11px; background: #f1f3f5; margin-right: 4px; }
+    body { font-family: sans-serif; max-width: 960px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    h2 { font-size: 16px; margin-top: 24px; margin-bottom: 8px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .row { display: flex; flex-wrap: wrap; gap: 16px; }
+    .row > div { min-width: 140px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 13px; text-align: left; }
+    th { background: #f5f5f5; }
+    .status-ok { color: green; font-weight: bold; }
+    .status-warn { color: orange; font-weight: bold; }
+    .status-error { color: red; font-weight: bold; }
+    button { padding: 4px 8px; font-size: 12px; cursor: pointer; }
+    .small { font-size: 12px; color: #666; }
   </style>
 </head>
 <body>
-  <h1>7번 세팅 도구 · Setup & Monitor Center</h1>
-  <p class="muted">각 도구의 플랫폼 세팅 · 자동 테스트 · 자동 수정 상태를 한 화면에서 관리합니다.</p>
+  <h1>7번 세팅 도구 · Setup &amp; Monitor Center</h1>
+  <p>각 도구의 플랫폼 세팅 · 자동 테스트 · 자동 수정 상태를 한 화면에서 관리합니다.</p>
 
-  <div class="card">
+  <div class="card" id="engine-card">
     <div class="row">
-      <div><div class="label">엔진 상태</div><div class="value" id="engineStatus">대기</div></div>
-      <div><div class="label">마지막 갱신</div><div class="value" id="lastUpdated">--:--</div></div>
-      <div><div class="label">도구 개수</div><div class="value" id="toolCount">0</div></div>
+      <div><strong>엔진 상태</strong><br><span id="engine-status">대기</span></div>
+      <div><strong>마지막 갱신</strong><br><span id="last-updated">--:--</span></div>
+      <div><strong>도구 개수</strong><br><span id="tool-count">0</span></div>
       <div>
-        <div class="label">도구 상태 요약</div>
-        <div class="value">
-          <span class="chip">정상 <span id="okCount">0</span></span>
-          <span class="chip">경고 <span id="warnCount">0</span></span>
-          <span class="chip">오류 <span id="errorCount">0</span></span>
-        </div>
+        <strong>도구 상태 요약</strong><br>
+        <span id="summary">정상 0 · 경고 0 · 오류 0</span>
       </div>
-      <div><div class="label">복잡 오류 개수</div><div class="value" id="complexErrorTotal">0</div></div>
+      <div>
+        <strong>복잡 오류 개수</strong><br>
+        <span id="complex-errors">0</span>
+      </div>
     </div>
-
-    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-      <button id="reloadToolsBtn">도구 목록 새로 불러오기</button>
-      <span class="muted">· 도구 목록은 /api/tools.json에서 자동 감지됩니다.</span>
+    <div style="margin-top:8px;">
+      <button id="reload-btn">도구 목록 새로 불러오기</button>
+      <button disabled>전체 자동 테스트 실행 (예시)</button>
+      <div class="small">
+        · 도구 목록은 <code>/api/tools.json</code>에서 자동 감지됩니다.  
+        · 불러온 목록은 브라우저에 보관되어, 창을 꺼도 다시 나타납니다.
+      </div>
     </div>
-
-    <div id="toolsError" class="muted" style="margin-top:6px; display:none; color:#b00020;"></div>
   </div>
 
-  <div class="card">
-    <div class="label">도구별 세팅 및 상태</div>
-    <p class="muted">도구를 열면 /api/tools.json을 자동으로 읽어 목록을 표시합니다.</p>
+  <h2>도구별 세팅 및 상태</h2>
+  <div class="small">
+    도구를 열면 <code>/api/tools.json</code>을 자동으로 읽어 목록을 표시합니다.<br>
+    나중에는 플랫폼의 “자동 감지 API”로 교체할 수 있습니다.
+  </div>
 
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:40px;">#</th>
-            <th>도구 이름</th>
-            <th style="width:80px;">상태</th>
-            <th>코드 저장소</th>
-            <th>배포 주소</th>
-            <th style="width:90px;">마지막 테스트</th>
-            <th style="width:120px;">동작</th>
-          </tr>
-        </thead>
-        <tbody id="toolsTableBody">
-          <tr><td colspan="7" class="muted">도구 목록을 불러오는 중...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div style="margin-top:8px; margin-bottom:8px;">
+    <input id="search-input" type="text" placeholder="도구 이름 또는 번호 검색" />
+    <button id="clear-search">검색 지우기</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>도구 이름</th>
+        <th>상태</th>
+        <th>코드 저장소</th>
+        <th>배포 주소</th>
+        <th>마지막 테스트</th>
+        <th>동작</th>
+      </tr>
+    </thead>
+    <tbody id="tool-body">
+      <tr><td colspan="7">도구 목록을 불러오는 중...</td></tr>
+    </tbody>
+  </table>
+
+  <h2>도구별 자동 테스트·자동 수정 요약</h2>
+  <div id="auto-summary" class="card small">
+    현재 자동 수집된 오류 정보 없음 (예시 단계).
   </div>
 
   <script>
-    const STORAGE_KEY = "wic-tools-cache";
+    const STORAGE_KEY = "wic-tool-list-v1";
 
-    function formatTime(d){
-      return String(d.getHours()).padStart(2,"0")+":"+
-             String(d.getMinutes()).padStart(2,"0")+":"+
-             String(d.getSeconds()).padStart(2,"0");
+    function classifyStatus(status) {
+      if (status === "정상") return "status-ok";
+      if (status === "경고") return "status-warn";
+      if (status === "오류") return "status-error";
+      return "";
     }
 
-    function badge(st){
-      if(st==="정상") return '<span class="badge badge-ok">정상</span>';
-      if(st==="경고") return '<span class="badge badge-warn">경고</span>';
-      if(st==="오류") return '<span class="badge badge-error">오류</span>';
-      return st||"
+    function updateSummary(tools) {
+      const total = tools.length;
+      let ok = 0, warn = 0, err = 0, complex = 0;
+      tools.forEach(t => {
+        if (t.status === "정상") ok++;
+        else if (t.status === "경고") warn++;
+        else if (t.status === "오류") err++;
+        if (t.complexError) complex++;
+      });
+      document.getElementById("tool-count").textContent = total;
+      document.getElementById("summary").textContent =
+        `정상 ${ok} · 경고 ${warn} · 오류 ${err}`;
+      document.getElementById("complex-errors").textContent = complex;
+      document.getElementById("engine-status").textContent = "정상";
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      document.getElementById("last-updated").textContent = `${hh}:${mm}:${ss}`;
+    }
+
+    function renderTable(tools, keyword = "") {
+      const tbody = document.getElementById("tool-body");
+      tbody.innerHTML = "";
+      const lower = keyword.trim().toLowerCase();
+      const filtered = tools.filter(t => {
+        if (!lower) return true;
+        return (
+          String(t.id).includes(lower) ||
+          (t.name && t.name.toLowerCase().includes(lower))
+        );
+      });
+      if (!filtered.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 7;
+        td.textContent = "표시할 도구가 없습니다.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      filtered.forEach(t => {
+        const tr = document.createElement("tr");
+
+        const tdId = document.createElement("td");
+        tdId.textContent = t.id;
+        tr.appendChild(tdId);
+
+        const tdName = document.createElement("td");
+        tdName.textContent = t.name || "";
+        tr.appendChild(tdName);
+
+        const tdStatus = document.createElement("td");
+        tdStatus.textContent = t.status || "-";
+        tdStatus.className = classifyStatus(t.status);
+        tr.appendChild(tdStatus);
+
+        const tdRepo = document.createElement("td");
+        if (t.repoUrl) {
+          const a = document.createElement("a");
+          a.href = t.repoUrl;
+          a.target = "_blank";
+          a.textContent = "열기";
+          tdRepo.appendChild(a);
+        } else {
+          tdRepo.textContent = "-";
+        }
+        tr.appendChild(tdRepo);
+
+        const tdDeploy = document.createElement("td");
+        if (t.deployUrl) {
+          const a2 = document.createElement("a");
+          a2.href = t.deployUrl;
+          a2.target = "_blank";
+          a2.textContent = "열기";
+          tdDeploy.appendChild(a2);
+        } else {
+          tdDeploy.textContent = "-";
+        }
+        tr.appendChild(tdDeploy);
+
+        const tdLast = document.createElement("td");
+        tdLast.textContent = t.lastTest || "-";
+        tr.appendChild(tdLast);
+
+        const tdAction = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.textContent = "상태표시 · 세부 보기";
+        btn.onclick = () => {
+          alert(`도구 ${t.id} · ${t.name}\n상태: ${t.status}\n(자동 테스트·자동 수정 API는 다음 단계에서 연결 예정입니다.)`);
+        };
+        tdAction.appendChild(btn);
+        tr.appendChild(tdAction);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadToolsFromApi() {
+      try {
+        const res = await fetch("/api/tools.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("response not ok");
+        const data = await res.json();
+        const tools = Array.isArray(data.tools) ? data.tools : [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+        updateSummary(tools);
+        renderTable(tools, document.getElementById("search-input").value);
+      } catch (e) {
+        document.getElementById("engine-status").textContent = "오류";
+        const tbody = document.getElementById("tool-body");
+        tbody.innerHTML = "";
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 7;
+        td.textContent = "도구 목록을 불러오지 못했습니다. /api/tools.json을 준비하면 자동으로 목록이 나타납니다.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function loadToolsFromStorageOrApi() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const tools = JSON.parse(saved);
+          updateSummary(tools);
+          renderTable(tools);
+          return;
+        } catch (e) {}
+      }
+      loadToolsFromApi();
+    }
+
+    document.getElementById("reload-btn").addEventListener("click", loadToolsFromApi);
+    document.getElementById("search-input").addEventListener("input", () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const tools = JSON.parse(saved);
+          renderTable(tools, document.getElementById("search-input").value);
+        } catch (e) {}
+      }
+    });
+    document.getElementById("clear-search").addEventListener("click", () => {
+      document.getElementById("search-input").value = "";
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const tools = JSON.parse(saved);
+          renderTable(tools);
+        } catch (e) {}
+      }
+    });
+
+    loadToolsFromStorageOrApi();
+  </script>
+</body>
+</html>

@@ -6,125 +6,132 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { font-family: sans-serif; max-width: 960px; margin: 0 auto; padding: 16px; }
-    h1 { font-size: 20px; margin-bottom: 8px; }
-    h2 { font-size: 16px; margin-top: 24px; margin-bottom: 8px; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-    .row { display: flex; flex-wrap: wrap; gap: 16px; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    h2 { font-size: 16px; margin-top: 16px; }
+    .card { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-top: 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
     .row > div { min-width: 140px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 13px; text-align: left; }
+    button { padding: 6px 10px; margin: 4px 0; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+    th, td { border: 1px solid #ddd; padding: 4px 6px; text-align: left; }
     th { background: #f5f5f5; }
-    .status-ok { color: green; font-weight: bold; }
-    .status-warn { color: orange; font-weight: bold; }
-    .status-error { color: red; font-weight: bold; }
-    button { padding: 4px 8px; font-size: 12px; cursor: pointer; }
-    .small { font-size: 12px; color: #666; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
+    .badge-ok { background: #e0f7e9; }
+    .badge-warn { background: #fff4d8; }
+    .badge-err { background: #ffe0e0; }
+    #paste-panel { margin-top: 8px; display: none; }
+    #toolText { width: 100%; height: 120px; font-family: monospace; font-size: 12px; }
+    small { color: #666; }
   </style>
 </head>
 <body>
-  <h1>7번 세팅 도구 · Setup &amp; Monitor Center</h1>
+  <h1>7번 세팅 도구 · Setup & Monitor Center</h1>
   <p>각 도구의 플랫폼 세팅 · 자동 테스트 · 자동 수정 상태를 한 화면에서 관리합니다.</p>
 
-  <div class="card" id="engine-card">
+  <div class="card">
+    <h2>엔진 상태 · 요약</h2>
     <div class="row">
-      <div><strong>엔진 상태</strong><br><span id="engine-status">대기</span></div>
-      <div><strong>마지막 갱신</strong><br><span id="last-updated">--:--</span></div>
-      <div><strong>도구 개수</strong><br><span id="tool-count">0</span></div>
-      <div>
-        <strong>도구 상태 요약</strong><br>
-        <span id="summary">정상 0 · 경고 0 · 오류 0</span>
+      <div>엔진 상태: <span id="engineStatus">정상</span></div>
+      <div>마지막 갱신: <span id="lastUpdated">--:--:--</span></div>
+      <div>도구 개수: <span id="toolCount">0</span></div>
+      <div>도구 상태 요약:
+        <span class="badge badge-ok">정상 <span id="okCount">0</span></span>
+        <span class="badge badge-warn">경고 <span id="warnCount">0</span></span>
+        <span class="badge badge-err">오류 <span id="errCount">0</span></span>
       </div>
-      <div>
-        <strong>복잡 오류 개수</strong><br>
-        <span id="complex-errors">0</span>
-      </div>
+      <div>복잡 오류 개수: <span id="complexCount">0</span></div>
     </div>
-    <div style="margin-top:8px;">
-      <button id="reload-btn">도구 목록 새로 불러오기</button>
-      <button disabled>전체 자동 테스트 실행 (예시)</button>
-      <div class="small">
-        · 도구 목록은 <code>/api/tools.json</code>에서 자동 감지됩니다.  
-        · 불러온 목록은 브라우저에 보관되어, 창을 꺼도 다시 나타납니다.
-      </div>
+    <button id="reloadBtn">도구 목록 새로 불러오기</button>
+    <button id="openPasteBtn">도구 목록 붙여넣기</button>
+    <small>· 도구 목록은 브라우저에 저장되어, 창을 꺼도 다시 나타납니다.</small>
+
+    <div id="paste-panel" class="card">
+      <strong>도구 목록 붙여넣기</strong>
+      <p style="margin:4px 0;">
+        형식: <code>번호,도구 이름,상태,코드 저장소,배포 주소</code><br/>
+        예: <code>1,1번 고객 자동화 안내서,미연결,https://github.com/.../tool-1,https://1-guide...deno.net/</code>
+      </p>
+      <textarea id="toolText" placeholder="여기에 줄마다 도구 정보를 붙여넣으세요."></textarea>
+      <br/>
+      <button id="saveToolsBtn">도구 목록 저장</button>
     </div>
   </div>
 
-  <h2>도구별 세팅 및 상태</h2>
-  <div class="small">
-    도구를 열면 <code>/api/tools.json</code>을 자동으로 읽어 목록을 표시합니다.<br>
-    나중에는 플랫폼의 “자동 감지 API”로 교체할 수 있습니다.
+  <div class="card">
+    <h2>도구별 세팅 및 상태</h2>
+    <p style="margin:4px 0;">도구를 열면 저장된 도구 목록이 자동으로 표시됩니다. 나중에는 플랫폼의 “도구 목록 API”로 교체할 수 있습니다.</p>
+    <input id="searchBox" type="text" placeholder="도구 이름 또는 번호 검색" />
+    <button id="clearSearch">검색 지우기</button>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>도구 이름</th>
+          <th>상태</th>
+          <th>코드 저장소</th>
+          <th>배포 주소</th>
+          <th>마지막 테스트</th>
+          <th>동작</th>
+        </tr>
+      </thead>
+      <tbody id="toolTableBody">
+        <tr><td colspan="7">도구 목록이 없습니다. “도구 목록 붙여넣기”를 먼저 사용하세요.</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <div style="margin-top:8px; margin-bottom:8px;">
-    <input id="search-input" type="text" placeholder="도구 이름 또는 번호 검색" />
-    <button id="clear-search">검색 지우기</button>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>도구 이름</th>
-        <th>상태</th>
-        <th>코드 저장소</th>
-        <th>배포 주소</th>
-        <th>마지막 테스트</th>
-        <th>동작</th>
-      </tr>
-    </thead>
-    <tbody id="tool-body">
-      <tr><td colspan="7">도구 목록을 불러오는 중...</td></tr>
-    </tbody>
-  </table>
-
-  <h2>도구별 자동 테스트·자동 수정 요약</h2>
-  <div id="auto-summary" class="card small">
-    현재 자동 수집된 오류 정보 없음 (예시 단계).
+  <div class="card">
+    <h2>도구별 자동 테스트·자동 수정 요약</h2>
+    <p>여기에는 “자동으로 고칠 수 있는 오류”와 “사용자 선택이 필요한 오류”가 모여서 표시될 예정입니다. 지금은 구조만 준비된 상태입니다.</p>
+    <div id="summaryArea">현재 자동 수집된 오류 정보 없음 (예시 단계).</div>
   </div>
 
   <script>
-    const STORAGE_KEY = "wic-tool-list-v1";
+    const STORAGE_KEY = "wic_tool_list_v1";
 
-    function classifyStatus(status) {
-      if (status === "정상") return "status-ok";
-      if (status === "경고") return "status-warn";
-      if (status === "오류") return "status-error";
-      return "";
+    function nowTime() {
+      const d = new Date();
+      return d.toTimeString().split(" ")[0];
     }
 
-    function updateSummary(tools) {
-      const total = tools.length;
-      let ok = 0, warn = 0, err = 0, complex = 0;
+    function loadTools() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveTools(tools) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+    }
+
+    function renderTools(filterText = "") {
+      const tbody = document.getElementById("toolTableBody");
+      const tools = loadTools();
+      document.getElementById("toolCount").textContent = tools.length;
+
+      let ok = 0, warn = 0, err = 0;
       tools.forEach(t => {
         if (t.status === "정상") ok++;
         else if (t.status === "경고") warn++;
         else if (t.status === "오류") err++;
-        if (t.complexError) complex++;
       });
-      document.getElementById("tool-count").textContent = total;
-      document.getElementById("summary").textContent =
-        `정상 ${ok} · 경고 ${warn} · 오류 ${err}`;
-      document.getElementById("complex-errors").textContent = complex;
-      document.getElementById("engine-status").textContent = "정상";
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
-      document.getElementById("last-updated").textContent = `${hh}:${mm}:${ss}`;
-    }
+      document.getElementById("okCount").textContent = ok;
+      document.getElementById("warnCount").textContent = warn;
+      document.getElementById("errCount").textContent = err;
+      document.getElementById("complexCount").textContent = 0;
 
-    function renderTable(tools, keyword = "") {
-      const tbody = document.getElementById("tool-body");
       tbody.innerHTML = "";
-      const lower = keyword.trim().toLowerCase();
+      const ft = filterText.trim();
       const filtered = tools.filter(t => {
-        if (!lower) return true;
-        return (
-          String(t.id).includes(lower) ||
-          (t.name && t.name.toLowerCase().includes(lower))
-        );
+        if (!ft) return true;
+        return (t.id + "").includes(ft) || (t.name || "").includes(ft);
       });
-      if (!filtered.length) {
+
+      if (filtered.length === 0) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.colSpan = 7;
@@ -133,6 +140,7 @@
         tbody.appendChild(tr);
         return;
       }
+
       filtered.forEach(t => {
         const tr = document.createElement("tr");
 
@@ -141,112 +149,97 @@
         tr.appendChild(tdId);
 
         const tdName = document.createElement("td");
-        tdName.textContent = t.name || "";
+        tdName.textContent = t.name;
         tr.appendChild(tdName);
 
         const tdStatus = document.createElement("td");
-        tdStatus.textContent = t.status || "-";
-        tdStatus.className = classifyStatus(t.status);
+        tdStatus.textContent = t.status || "미연결";
         tr.appendChild(tdStatus);
 
         const tdRepo = document.createElement("td");
-        if (t.repoUrl) {
-          const a = document.createElement("a");
-          a.href = t.repoUrl;
-          a.target = "_blank";
-          a.textContent = "열기";
-          tdRepo.appendChild(a);
-        } else {
-          tdRepo.textContent = "-";
-        }
+        const aRepo = document.createElement("a");
+        aRepo.href = t.repo || "#";
+        aRepo.target = "_blank";
+        aRepo.textContent = t.repo ? "열기" : "-";
+        tdRepo.appendChild(aRepo);
         tr.appendChild(tdRepo);
 
         const tdDeploy = document.createElement("td");
-        if (t.deployUrl) {
-          const a2 = document.createElement("a");
-          a2.href = t.deployUrl;
-          a2.target = "_blank";
-          a2.textContent = "열기";
-          tdDeploy.appendChild(a2);
-        } else {
-          tdDeploy.textContent = "-";
-        }
+        const aDep = document.createElement("a");
+        aDep.href = t.deploy || "#";
+        aDep.target = "_blank";
+        aDep.textContent = t.deploy ? "열기" : "-";
+        tdDeploy.appendChild(aDep);
         tr.appendChild(tdDeploy);
 
-        const tdLast = document.createElement("td");
-        tdLast.textContent = t.lastTest || "-";
-        tr.appendChild(tdLast);
+        const tdTest = document.createElement("td");
+        tdTest.textContent = t.lastTest || "-";
+        tr.appendChild(tdTest);
 
         const tdAction = document.createElement("td");
-        const btn = document.createElement("button");
-        btn.textContent = "상태표시 · 세부 보기";
-        btn.onclick = () => {
-          alert(`도구 ${t.id} · ${t.name}\n상태: ${t.status}\n(자동 테스트·자동 수정 API는 다음 단계에서 연결 예정입니다.)`);
+        const btnStatus = document.createElement("button");
+        btnStatus.textContent = "상태표시 · 세부 보기";
+        btnStatus.onclick = () => {
+          alert(
+            `[${t.id}번] ${t.name}\n상태: ${t.status || "미연결"}\n코드: ${t.repo || "-"}\n배포: ${t.deploy || "-"}`
+          );
         };
-        tdAction.appendChild(btn);
+        tdAction.appendChild(btnStatus);
         tr.appendChild(tdAction);
 
         tbody.appendChild(tr);
       });
     }
 
-    async function loadToolsFromApi() {
-      try {
-        const res = await fetch("/api/tools.json", { cache: "no-store" });
-        if (!res.ok) throw new Error("response not ok");
-        const data = await res.json();
-        const tools = Array.isArray(data.tools) ? data.tools : [];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
-        updateSummary(tools);
-        renderTable(tools, document.getElementById("search-input").value);
-      } catch (e) {
-        document.getElementById("engine-status").textContent = "오류";
-        const tbody = document.getElementById("tool-body");
-        tbody.innerHTML = "";
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 7;
-        td.textContent = "도구 목록을 불러오지 못했습니다. /api/tools.json을 준비하면 자동으로 목록이 나타납니다.";
-        tr.appendChild(td);
-        tbody.appendChild(tr);
+    function parsePasted(text) {
+      const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+      const tools = [];
+      for (const line of lines) {
+        const parts = line.split(",").map(p => p.trim());
+        if (parts.length < 2) continue;
+        const [id, name, status, repo, deploy] = parts;
+        tools.push({
+          id: id || "",
+          name: name || "",
+          status: status || "미연결",
+          repo: repo || "",
+          deploy: deploy || "",
+          lastTest: "-"
+        });
       }
+      return tools;
     }
 
-    function loadToolsFromStorageOrApi() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const tools = JSON.parse(saved);
-          updateSummary(tools);
-          renderTable(tools);
-          return;
-        } catch (e) {}
-      }
-      loadToolsFromApi();
-    }
+    document.getElementById("reloadBtn").onclick = () => {
+      document.getElementById("lastUpdated").textContent = nowTime();
+      renderTools(document.getElementById("searchBox").value);
+    };
 
-    document.getElementById("reload-btn").addEventListener("click", loadToolsFromApi);
-    document.getElementById("search-input").addEventListener("input", () => {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const tools = JSON.parse(saved);
-          renderTable(tools, document.getElementById("search-input").value);
-        } catch (e) {}
-      }
-    });
-    document.getElementById("clear-search").addEventListener("click", () => {
-      document.getElementById("search-input").value = "";
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const tools = JSON.parse(saved);
-          renderTable(tools);
-        } catch (e) {}
-      }
+    document.getElementById("openPasteBtn").onclick = () => {
+      const panel = document.getElementById("paste-panel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    };
+
+    document.getElementById("saveToolsBtn").onclick = () => {
+      const text = document.getElementById("toolText").value;
+      const tools = parsePasted(text);
+      saveTools(tools);
+      document.getElementById("lastUpdated").textContent = nowTime();
+      renderTools(document.getElementById("searchBox").value);
+      alert("도구 목록이 저장되었습니다.");
+    };
+
+    document.getElementById("searchBox").addEventListener("input", (e) => {
+      renderTools(e.target.value);
     });
 
-    loadToolsFromStorageOrApi();
+    document.getElementById("clearSearch").onclick = () => {
+      document.getElementById("searchBox").value = "";
+      renderTools("");
+    };
+
+    // 첫 로드 시 localStorage에서 불러오기
+    renderTools("");
   </script>
 </body>
 </html>

@@ -5,7 +5,7 @@
   <title>7번 세팅 도구 · Setup & Monitor Center</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 16px; background: #f5f5f5; }
+    body { font-family: system-ui; margin: 0; padding: 16px; background: #f5f5f5; }
     h1 { margin-top: 0; font-size: 20px; }
     .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     .row { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -21,37 +21,20 @@
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     thead { background: #fafafa; }
     th, td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: left; }
-    th { font-weight: 600; color: #444; }
     .status-cell { white-space: nowrap; }
-    .link { color: #0b5ed7; text-decoration: none; }
-    .link:hover { text-decoration: underline; }
-    .error-box { padding: 8px; border-radius: 6px; background: #fff4e5; border: 1px solid #ffd8a8; font-size: 12px; margin-top: 8px; }
     .muted { color: #888; font-size: 12px; }
     .chip { display: inline-block; padding: 2px 6px; border-radius: 8px; font-size: 11px; background: #f1f3f5; margin-right: 4px; }
-    @media (max-width: 640px) {
-      table { font-size: 11px; }
-      th, td { padding: 4px 6px; }
-    }
   </style>
 </head>
 <body>
   <h1>7번 세팅 도구 · Setup & Monitor Center</h1>
-  <p class="muted">각 도구의 플랫폼 세팅 · 자동 테스트 · 자동 수정 상태를 한 화면에서 관리하는 전용 도구입니다.</p>
+  <p class="muted">각 도구의 플랫폼 세팅 · 자동 테스트 · 자동 수정 상태를 한 화면에서 관리합니다.</p>
 
   <div class="card">
     <div class="row">
-      <div>
-        <div class="label">엔진 상태</div>
-        <div class="value" id="engineStatus">대기</div>
-      </div>
-      <div>
-        <div class="label">마지막 갱신</div>
-        <div class="value" id="lastUpdated">--:--</div>
-      </div>
-      <div>
-        <div class="label">도구 개수</div>
-        <div class="value" id="toolCount">0</div>
-      </div>
+      <div><div class="label">엔진 상태</div><div class="value" id="engineStatus">대기</div></div>
+      <div><div class="label">마지막 갱신</div><div class="value" id="lastUpdated">--:--</div></div>
+      <div><div class="label">도구 개수</div><div class="value" id="toolCount">0</div></div>
       <div>
         <div class="label">도구 상태 요약</div>
         <div class="value">
@@ -60,30 +43,20 @@
           <span class="chip">오류 <span id="errorCount">0</span></span>
         </div>
       </div>
-      <div>
-        <div class="label">복잡 오류 개수</div>
-        <div class="value" id="complexErrorTotal">0</div>
-      </div>
+      <div><div class="label">복잡 오류 개수</div><div class="value" id="complexErrorTotal">0</div></div>
     </div>
-    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
       <button id="reloadToolsBtn">도구 목록 새로 불러오기</button>
-      <button id="runAllTestsBtn" disabled>전체 자동 테스트 실행 (예시)</button>
-      <span class="muted">· 도구 목록은 /api/tools.json에서 자동으로 감지합니다. · 불러온 목록은 브라우저에 보관되어, 창을 꺼도 다시 나타납니다.</span>
+      <span class="muted">· 도구 목록은 /api/tools.json에서 자동 감지됩니다.</span>
     </div>
-    <div id="toolsError" class="error-box" style="display:none;"></div>
+
+    <div id="toolsError" class="muted" style="margin-top:6px; display:none; color:#b00020;"></div>
   </div>
 
   <div class="card">
     <div class="label">도구별 세팅 및 상태</div>
-    <p class="muted">
-      이 버전부터는 도구를 “클릭해서 열기만 해도” 플랫폼에서 주는 도구 목록(JSON/API)을 자동으로 받아서 보여주는 것을 목표로 합니다.<br />
-      지금은 <code>/api/tools.json</code>에서 목록을 받아오는 구조이며, 나중에 플랫폼의 자동 감지 API로 교체할 수 있습니다.
-    </p>
-
-    <div style="margin-bottom: 8px; display:flex; gap:8px; flex-wrap:wrap;">
-      <input id="searchInput" type="text" placeholder="도구 이름 또는 번호 검색" style="flex:1 1 180px; padding:6px 8px; border-radius:6px; border:1px solid #ccc; font-size:12px;">
-      <button id="clearSearchBtn">검색 지우기</button>
-    </div>
+    <p class="muted">도구를 열면 /api/tools.json을 자동으로 읽어 목록을 표시합니다.</p>
 
     <div style="overflow-x:auto;">
       <table>
@@ -92,176 +65,30 @@
             <th style="width:40px;">#</th>
             <th>도구 이름</th>
             <th style="width:80px;">상태</th>
-            <th>코드 저장소 주소</th>
+            <th>코드 저장소</th>
             <th>배포 주소</th>
             <th style="width:90px;">마지막 테스트</th>
             <th style="width:120px;">동작</th>
           </tr>
         </thead>
         <tbody id="toolsTableBody">
-          <tr><td colspan="7" class="muted">도구 목록을 불러오는 중입니다...</td></tr>
+          <tr><td colspan="7" class="muted">도구 목록을 불러오는 중...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div class="card">
-    <div class="label">도구별 자동 테스트·자동 수정 요약</div>
-    <p class="muted">
-      여기에는 “자동으로 고칠 수 있는 오류”와 “사용자 선택이 필요한 오류”가 모여서 표시됩니다.<br />
-      지금은 예시 카드만 두고, 실제 자동 테스트·자동 수정 API 연결은 다음 단계에서 추가할 수 있습니다.
-    </p>
-    <div id="errorsSummary">
-      <div class="muted">현재 자동 수집된 오류 정보 없음 (예시 단계).</div>
-    </div>
-  </div>
-
   <script>
-    const STORAGE_KEY = "wic-tools-cache-v1";
+    const STORAGE_KEY = "wic-tools-cache";
 
-    function formatTime(date) {
-      const h = String(date.getHours()).padStart(2, "0");
-      const m = String(date.getMinutes()).padStart(2, "0");
-      const s = String(date.getSeconds()).padStart(2, "0");
-      return h + ":" + m + ":" + s;
+    function formatTime(d){
+      return String(d.getHours()).padStart(2,"0")+":"+
+             String(d.getMinutes()).padStart(2,"0")+":"+
+             String(d.getSeconds()).padStart(2,"0");
     }
 
-    function statusBadge(status) {
-      if (status === "정상") return '<span class="badge badge-ok">정상</span>';
-      if (status === "경고") return '<span class="badge badge-warn">경고</span>';
-      if (status === "오류") return '<span class="badge badge-error">오류</span>';
-      return '<span class="badge">'+ (status || "미정") +'</span>';
-    }
-
-    function loadFromStorage() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch (_) {
-        return null;
-      }
-    }
-
-    function saveToStorage(tools) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
-      } catch (_) {}
-    }
-
-    function updateSummary(tools) {
-      document.getElementById("toolCount").textContent = tools.length.toString();
-      let ok = 0, warn = 0, err = 0, complex = 0;
-      tools.forEach(t => {
-        if (t.status === "정상") ok++;
-        else if (t.status === "경고") warn++;
-        else if (t.status === "오류") err++;
-        if (typeof t.complexErrorCount === "number") complex += t.complexErrorCount;
-      });
-      document.getElementById("okCount").textContent = ok.toString();
-      document.getElementById("warnCount").textContent = warn.toString();
-      document.getElementById("errorCount").textContent = err.toString();
-      document.getElementById("complexErrorTotal").textContent = complex.toString();
-      document.getElementById("engineStatus").textContent = "정상";
-      document.getElementById("lastUpdated").textContent = formatTime(new Date());
-    }
-
-    function renderTable(tools, keyword) {
-      const tbody = document.getElementById("toolsTableBody");
-      tbody.innerHTML = "";
-      let filtered = tools;
-      if (keyword) {
-        const k = keyword.trim().toLowerCase();
-        filtered = tools.filter(t => 
-          String(t.id).includes(k) ||
-          (t.name && t.name.toLowerCase().includes(k))
-        );
-      }
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="muted">표시할 도구가 없습니다.</td></tr>';
-        return;
-      }
-      filtered.forEach(t => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${t.id}</td>
-          <td>${t.name || ""}</td>
-          <td class="status-cell">${statusBadge(t.status)}</td>
-          <td>${t.repoUrl ? '<a class="link" href="'+t.repoUrl+'" target="_blank">열기</a>' : '-'}</td>
-          <td>${t.deployUrl ? '<a class="link" href="'+t.deployUrl+'" target="_blank">열기</a>' : '-'}</td>
-          <td>${t.lastTest ? t.lastTest : '-'}</td>
-          <td>
-            <button disabled>상태표시</button>
-            <button disabled>세부 보기</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function fetchTools() {
-      const errorBox = document.getElementById("toolsError");
-      errorBox.style.display = "none";
-      errorBox.textContent = "";
-      document.getElementById("engineStatus").textContent = "불러오는 중...";
-
-      try {
-        const res = await fetch("/api/tools.json", { cache: "no-store" });
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status);
-        }
-        const tools = await res.json();
-        if (!Array.isArray(tools)) {
-          throw new Error("JSON 형식 오류");
-        }
-        saveToStorage(tools);
-        updateSummary(tools);
-        const keyword = document.getElementById("searchInput").value;
-        renderTable(tools, keyword);
-      } catch (e) {
-        document.getElementById("engineStatus").textContent = "오류";
-        const cached = loadFromStorage();
-        if (cached && Array.isArray(cached) && cached.length > 0) {
-          errorBox.style.display = "block";
-          errorBox.textContent = "도구 목록 API 호출에 실패했지만, 저장된 이전 목록을 대신 보여줍니다.";
-          updateSummary(cached);
-          const keyword = document.getElementById("searchInput").value;
-          renderTable(cached, keyword);
-        } else {
-          errorBox.style.display = "block";
-          errorBox.textContent = "도구 목록을 불러오지 못했습니다. /api/tools.json을 플랫폼에서 준비하면 자동 감지가 됩니다.";
-          const tbody = document.getElementById("toolsTableBody");
-          tbody.innerHTML = '<tr><td colspan="7" class="muted">표시할 도구가 없습니다. /api/tools.json이 준비되면 자동으로 목록이 나타납니다.</td></tr>';
-          document.getElementById("toolCount").textContent = "0";
-          document.getElementById("okCount").textContent = "0";
-          document.getElementById("warnCount").textContent = "0";
-          document.getElementById("errorCount").textContent = "0";
-          document.getElementById("complexErrorTotal").textContent = "0";
-        }
-      }
-    }
-
-    document.getElementById("reloadToolsBtn").addEventListener("click", () => {
-      fetchTools();
-    });
-
-    document.getElementById("searchInput").addEventListener("input", () => {
-      const cached = loadFromStorage();
-      if (cached) {
-        renderTable(cached, document.getElementById("searchInput").value);
-      }
-    });
-
-    document.getElementById("clearSearchBtn").addEventListener("click", () => {
-      document.getElementById("searchInput").value = "";
-      const cached = loadFromStorage();
-      if (cached) {
-        renderTable(cached, "");
-      }
-    });
-
-    // 처음 화면 열릴 때 자동으로 한 번 불러오기 시도
-    fetchTools();
-  </script>
-</body>
-</html>
+    function badge(st){
+      if(st==="정상") return '<span class="badge badge-ok">정상</span>';
+      if(st==="경고") return '<span class="badge badge-warn">경고</span>';
+      if(st==="오류") return '<span class="badge badge-error">오류</span>';
+      return st||"

@@ -2,23 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>WIC 세팅 도구 v2 · 7번 도구</title>
+  <title>WIC 세팅 도구 v2 · 카드 블록 버전 (7번 도구)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
-      --bg-main: #f5f7fb;
-      --bg-card: #ffffff;
-      --border-soft: #dde2ee;
-      --accent: #2d6cdf;
-      --accent-soft: #e4edff;
-      --text-main: #1f2933;
-      --text-muted: #6b7280;
-      --danger: #e11d48;
-      --success: #16a34a;
-      --warning: #f97316;
-      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --radius-lg: 18px;
-      --radius-md: 12px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #f5f7fb;
+      color: #111827;
     }
 
     * {
@@ -27,312 +17,254 @@
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-      background: radial-gradient(circle at top left, #eef2ff, #f9fafb);
-      color: var(--text-main);
+      padding: 16px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .app-shell {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 24px;
-      max-width: 1180px;
-      margin: 0 auto;
+    h1, h2, h3 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
     }
 
-    header {
-      margin-bottom: 16px;
+    h1 {
+      font-size: 20px;
     }
 
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 8px;
-      align-items: center;
+    h2 {
+      font-size: 17px;
+    }
+
+    h3 {
+      font-size: 15px;
+    }
+
+    p {
+      margin: 4px 0;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(45, 108, 223, 0.06);
-      color: var(--accent);
-      border: 1px solid rgba(45, 108, 223, 0.18);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+      gap: 4px;
     }
 
-    .badge-secondary {
-      background: #e5e7eb;
-      color: #374151;
-      border-color: #d1d5db;
-    }
-
-    .title {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    .page-header {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 4px;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
     }
 
-    .title span.sub {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-muted);
+    .page-subtitle {
+      font-size: 12px;
+      color: #6b7280;
     }
 
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 18px;
+    .pill-note {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      display: inline-block;
     }
 
-    .subtitle-strong {
-      font-weight: 500;
-      color: #4b5563;
-    }
-
-    main {
+    .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+      gap: 16px;
+      align-items: flex-start;
     }
 
-    @media (max-width: 980px) {
-      main {
+    @media (max-width: 960px) {
+      .layout {
         grid-template-columns: minmax(0, 1fr);
       }
     }
 
     .card {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      padding: 18px 18px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+      border: 1px solid #e5e7eb;
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-    }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      display: flex;
       align-items: center;
       gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .card-title-index {
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
+    .card-header-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .card-header-title {
+      font-size: 14px;
       font-weight: 600;
     }
 
-    .card-description {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    label {
-      font-size: 12px;
-      font-weight: 500;
-      color: #4b5563;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    label span.hint {
+    .card-header-sub {
       font-size: 11px;
-      font-weight: 400;
-      color: var(--text-muted);
+      color: #6b7280;
+    }
+
+    .small-label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 2px;
     }
 
     textarea,
     input {
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-soft);
-      padding: 8px 10px;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 7px 9px;
       font-size: 13px;
       font-family: inherit;
       outline: none;
-      background: #f9fafb;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease,
-        background-color 0.15s ease;
-      width: 100%;
+      background-color: #f9fafb;
+      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     textarea:focus,
     input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18);
-      background: #ffffff;
+      border-color: #2563eb;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
     }
 
     textarea {
-      min-height: 110px;
+      min-height: 90px;
       resize: vertical;
     }
 
-    .inline-input-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.4fr);
+    .input-inline-row {
+      display: flex;
       gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 840px) {
-      .inline-input-row {
-        grid-template-columns: minmax(0, 1fr);
-      }
+    .input-inline-row input {
+      flex: 1;
+    }
+
+    .input-inline-prefix {
+      font-size: 12px;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 11px;
     }
 
     .button-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 4px;
     }
 
     button {
       border-radius: 999px;
       border: none;
-      padding: 7px 14px;
+      padding: 6px 10px;
       font-size: 12px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: transform 0.05s ease, box-shadow 0.1s ease,
-        background-color 0.1s ease;
+      gap: 4px;
+      background-color: #2563eb;
+      color: #ffffff;
+      transition: background-color 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
       white-space: nowrap;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
     }
 
     button:active {
       transform: translateY(1px);
-      box-shadow: none;
+      box-shadow: 0 0 0 rgba(15, 23, 42, 0.2);
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: #ffffff;
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
-    }
-
-    .btn-ghost {
-      background: #e5e7eb;
+    button.secondary {
+      background-color: #f3f4f6;
       color: #111827;
+      box-shadow: none;
+      border: 1px solid #e5e7eb;
     }
 
-    .btn-danger {
-      background: #fee2e2;
-      color: #b91c1c;
+    button.secondary:hover {
+      background-color: #e5e7eb;
+    }
+
+    button.danger {
+      background-color: #f97373;
+    }
+
+    button.danger:hover {
+      background-color: #ef4444;
     }
 
     .timestamp {
       font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 2px;
+      color: #6b7280;
     }
 
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #9ca3af;
+    .timestamp strong {
+      font-weight: 600;
+      color: #111827;
     }
 
-    .dot-ok {
-      background: var(--success);
-    }
-
-    .dot-warn {
-      background: var(--warning);
-    }
-
-    .dot-error {
-      background: var(--danger);
-    }
-
-    .rules-list {
-      font-size: 12px;
-      color: var(--text-muted);
+    .hint-list {
+      margin-top: 4px;
       padding-left: 16px;
-      margin: 4px 0 0;
     }
 
-    .rules-list li {
+    .hint-list li {
+      font-size: 11px;
+      color: #6b7280;
       margin-bottom: 2px;
     }
 
-    .test-summary {
-      font-size: 12px;
-      margin-top: 6px;
-      padding: 6px 8px;
-      border-radius: 10px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .test-summary span.label {
-      font-weight: 600;
-    }
-
-    .cards-container {
+    .tool-cards-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      max-height: 420px;
+      gap: 8px;
+      margin-top: 8px;
+      max-height: 520px;
       overflow: auto;
-      padding-right: 4px;
+      padding-right: 2px;
     }
 
     .tool-card {
-      border-radius: 14px;
+      border-radius: 12px;
       border: 1px solid #e5e7eb;
+      padding: 10px 10px 9px 10px;
       background: #f9fafb;
-      padding: 10px 10px 9px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -341,844 +273,831 @@
     .tool-card-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
       gap: 8px;
     }
 
-    .tool-name {
+    .tool-card-title {
       font-size: 13px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
-    .tool-index-pill {
+    .tool-card-subtitle {
       font-size: 11px;
-      padding: 2px 7px;
+      color: #6b7280;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      padding: 2px 8px;
       border-radius: 999px;
-      background: #e0ecff;
-      color: #1d4ed8;
-      font-weight: 600;
+      border: 1px solid #e5e7eb;
+      background-color: #ffffff;
+      white-space: nowrap;
     }
 
-    .tool-status {
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .status-ok {
+      border-color: #4ade80;
+      background-color: #ecfdf5;
+      color: #166534;
     }
 
-    .tool-status.ok {
-      color: var(--success);
+    .status-warn {
+      border-color: #facc15;
+      background-color: #fffbeb;
+      color: #92400e;
     }
 
-    .tool-status.warn {
-      color: var(--warning);
+    .status-error {
+      border-color: #f97373;
+      background-color: #fef2f2;
+      color: #991b1b;
     }
 
-    .tool-status.error {
-      color: var(--danger);
+    .status-muted {
+      color: #6b7280;
     }
 
-    .tool-fields {
+    .tool-card-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 4px;
-      margin-top: 2px;
+      gap: 6px;
     }
 
-    .mini-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 1px;
-    }
-
-    .mini-input {
-      font-size: 12px;
-      padding: 6px 7px;
-      border-radius: 9px;
-      background: #ffffff;
+    @media (min-width: 720px) {
+      .tool-card-grid {
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+      }
     }
 
     .url-display {
       font-size: 11px;
       color: #4b5563;
-      background: #e5e7eb;
       padding: 4px 6px;
-      border-radius: 999px;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px dashed #e5e7eb;
+      overflow-wrap: anywhere;
     }
 
-    footer {
-      margin-top: 18px;
-      font-size: 11px;
-      color: var(--text-muted);
+    .url-display a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .url-display a:hover {
+      text-decoration: underline;
+    }
+
+    .tool-actions {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .footer-left,
-    .footer-right {
-      display: flex;
-      gap: 10px;
       align-items: center;
+      margin-top: 4px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
-    .pill {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      font-size: 11px;
+    .tool-actions-left {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
-    .pill-strong {
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-weight: 600;
+    .test-message {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .footer-note strong {
+      color: #111827;
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header>
-      <div class="badge-row">
-        <span class="badge">7번 도구 · WIC 세팅 도구 v2</span>
-        <span class="badge badge-secondary">Local-only · Safe DOM · localStorage</span>
+  <header class="page-header">
+    <div>
+      <h1>WIC 세팅 도구 v2 · 카드 블록 방식 (7번 도구)</h1>
+      <div class="page-subtitle">
+        도구별 카드 블록을 한 번만 잘 만들고, 나머지는 자동으로 복사·재사용되는 구조입니다.
       </div>
-      <div class="title">
-        WIC 세팅 도구 v2
-        <span class="sub">도구 목록 · GitHub · Deno · 업로드 주소를 한 화면에서 관리</span>
+    </div>
+    <div class="page-subtitle">
+      <span class="pill-note">※ 이 화면에 보이는 것만 동작합니다. (저장: 브라우저 localStorage)</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 좌측: 도구 목록 & 기본 주소 -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-header-main">
+          <div class="card-header-title">① 도구 목록 & 기본 주소</div>
+          <div class="card-header-sub">
+            도구 이름과 번호는 여기서 관리하고, 아래 카드 블록은 자동으로 따라갑니다.
+          </div>
+        </div>
+        <span class="badge">Local-only · Safe DOM</span>
       </div>
-      <div class="subtitle">
-        <span class="subtitle-strong">※ 이 화면에 보이는 것만 동작합니다.</span>
-        브라우저 <strong>localStorage</strong>에만 자동 저장·복원하며, 서버 통신·백그라운드 타이머는 사용하지 않습니다.
-      </div>
-    </header>
 
-    <main>
-      <!-- ① 도구 목록 & 기본 주소 -->
-      <section class="card" aria-label="도구 목록 및 기본 주소">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="card-title-index">①</span>
-            도구 목록 &amp; 기본 주소
-          </div>
-        </div>
-        <p class="card-description">
-          도구 이름 목록과 GitHub·Deno·업로드 기본 주소를 한 번만 입력해 두고,
-          <strong>카드 생성 / 갱신</strong> 버튼으로 각 도구 카드를 자동 생성합니다.
-        </p>
-
-        <div class="field-group">
-          <div class="field">
-            <label>
-              도구 목록 (한 줄당 1개)
-              <span class="hint">예: 1번 고객 자동화 안내서 / 2번 입찰 프로그램 ...</span>
-            </label>
-            <textarea id="toolList" placeholder="예시:
-1번 고객 자동화 안내서
-2번 입찰 프로그램
-3번 코딩 기초 연습 도구
-4번 연구비 박사 엑셀 생성기"></textarea>
-          </div>
-
-          <div class="inline-input-row">
-            <div class="field">
-              <label>
-                GitHub 기본 주소
-                <span class="hint">예: https://github.com/obk369369-spec</span>
-              </label>
-              <input id="githubBase" type="url" placeholder="https://github.com/obk369369-spec" />
-            </div>
-            <div class="field">
-              <label>
-                Deno 기본 주소
-                <span class="hint">예: https://dash.deno.com/projects</span>
-              </label>
-              <input id="denoBase" type="url" placeholder="https://dash.deno.com/projects" />
-            </div>
-            <div class="field">
-              <label>
-                업로드 기본 주소
-                <span class="hint">예: https://tool-name.obk369369-spec.deno.net</span>
-              </label>
-              <input id="uploadBase" type="url" placeholder="https://example.obk369369-spec.deno.net" />
-            </div>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <button type="button" class="btn-primary" id="btnGenerate">
-            카드 생성 / 갱신
-          </button>
-          <button type="button" class="btn-ghost" id="btnRunTests">
-            전체 자동 테스트 1회
-          </button>
-          <button type="button" class="btn-danger" id="btnReset">
-            데이터 초기화
-          </button>
-          <div class="timestamp" id="autoSaveInfo">
-            <span class="dot" id="autoSaveDot"></span>
-            자동 저장: 대기 중
-          </div>
-        </div>
-      </section>
-
-      <!-- ② 자동 테스트 규칙 & 테스트 요약 -->
-      <section class="card" aria-label="자동 테스트 규칙 및 요약">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="card-title-index">②</span>
-            자동 테스트 규칙 &amp; 요약
-          </div>
-        </div>
-        <p class="card-description">
-          이 영역은 <strong>테스트 규칙 안내 + 최근 테스트 결과 요약</strong>을 보여줍니다.
-          실제 테스트는 네트워크 요청 없이 <strong>문자열 검사만</strong>으로 판단합니다.
-        </p>
-
-        <ul class="rules-list">
-          <li>테스트는 네트워크 요청 없이 <strong>문자열 규칙</strong>만으로 판단합니다.</li>
-          <li>
-            각 카드의 GitHub / Deno / 업로드 주소는
-            <strong>비어 있거나, <code>http</code> 또는 <code>https</code>로 시작</strong>해야 안전하다고 봅니다.
-          </li>
-          <li>세 주소 중 하나라도 다른 형식이면 해당 카드에 <strong>경고</strong>를 표시합니다.</li>
+      <div>
+        <div class="small-label">도구 목록 (한 줄당 1개 · “번호 이름” 형식 권장)</div>
+        <textarea id="toolLines" placeholder="예시&#10;1번 고객 자동화 안내서&#10;2번 입찰 프로그램&#10;3번 코딩 기초 연습 도구&#10;4번 연구비 박사 엑셀 생성기&#10;5번 보고서 생성기&#10;7번 세팅 도구"></textarea>
+        <ul class="hint-list">
+          <li>앞에 숫자를 적으면 자동으로 “1, 2, 3...” 번호를 인식합니다. (예: <code>1번 고객 자동화 안내서</code>)</li>
+          <li>번호가 없으면 위에서부터 1, 2, 3 순서대로 자동 부여됩니다.</li>
         </ul>
+      </div>
 
-        <div id="testSummary" class="test-summary" aria-live="polite">
-          <span class="label">최근 테스트 결과</span>
-          <span id="testSummaryText">아직 수행된 테스트가 없습니다.</span>
+      <div style="margin-top:8px;">
+        <div class="small-label">기본 주소 (모든 도구에 공통으로 사용)</div>
+        <div class="input-inline-row">
+          <span class="input-inline-prefix">GitHub 기본 주소</span>
+          <input id="githubBase" type="text" placeholder="https://github.com/obk369369-spec" />
         </div>
+        <div class="input-inline-row">
+          <span class="input-inline-prefix">Deno 기본 주소</span>
+          <input id="denoBase" type="text" placeholder="https://dash.deno.com/projects" />
+        </div>
+        <div class="input-inline-row">
+          <span class="input-inline-prefix">업로드 기본 도메인</span>
+          <input id="uploadBase" type="text" placeholder="https://{slug}.obk369369-spec.deno.net" />
+        </div>
+        <p class="muted">
+          · GitHub/Deno 기본 주소는 바뀌는 일이 거의 없으므로, 한 번만 설정해 두고 계속 재사용합니다. <br />
+          · 업로드 도메인은 슬러그만 바꾸는 패턴이라면, 설명에 규칙만 적어두고 각 카드에서 슬러그를 관리합니다.
+        </p>
+      </div>
 
-        <div class="card-header" style="margin-top:10px;">
-          <div class="card-title">
-            <span class="card-title-index">③</span>
-            도구 카드 목록
+      <div class="button-row">
+        <button id="btnBuildCards" type="button">
+          카드 생성 / 갱신
+        </button>
+        <button id="btnRunAllTests" type="button" class="secondary">
+          전체 자동 테스트 1회
+        </button>
+        <button id="btnResetAll" type="button" class="secondary danger">
+          데이터 초기화
+        </button>
+      </div>
+
+      <div class="timestamp" id="saveStatus">
+        자동 저장: <strong>저장 기록 없음</strong>
+      </div>
+
+      <div style="margin-top:8px;">
+        <h3>② 자동 테스트 규칙 (문자열만 검사)</h3>
+        <ul class="hint-list">
+          <li>네트워크 요청 없이, “문자열 규칙”으로만 검사합니다.</li>
+          <li>GitHub / Deno / 업로드 주소가 비어 있거나 <code>http</code>로 시작하지 않으면 경고가 표시됩니다.</li>
+          <li>세 주소 모두 <code>http</code>로 시작하면 “OK” 상태가 됩니다.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 우측: 도구 카드 영역 -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-header-main">
+          <div class="card-header-title">③ 도구 카드 (블록 단위)</div>
+          <div class="card-header-sub">
+            1개의 카드 블록 구조만 잘 만들어두면, 모든 도구가 같은 형태로 재사용됩니다.
           </div>
         </div>
-        <p class="card-description">
-          도구 이름에서 <strong>번호와 이름</strong>을 자동으로 분리하고, 각 도구별로
-          GitHub·Deno·업로드 주소를 개별 관리합니다. 필요하면 카드 안에서 직접 수정할 수 있습니다.
-        </p>
-
-        <div class="cards-container" id="cardsContainer" aria-label="도구 카드 목록">
-          <!-- 도구 카드들이 여기에 동적으로 추가됩니다. -->
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="footer-left">
-        <span class="pill pill-strong">WIC 자동화 시스템 · 7번 세팅 도구</span>
-        <span class="pill">v2 · Local-only</span>
+        <span class="badge">Card-based · Block reuse</span>
       </div>
-      <div class="footer-right">
-        <span>저장 위치: 브라우저 localStorage (키: <code>wic-settings-v2</code>)</span>
+
+      <p class="muted">
+        · 왼쪽에서 “도구 목록 + 기본 주소”를 설정하고, <strong>카드 생성 / 갱신</strong>을 누르면 여기 카드들이 만들어집니다. <br />
+        · 각 카드에서 <strong>GitHub 경로 / Deno 슬러그 / 업로드 슬러그</strong>를 적으면, 아래에 전체 URL이 자동으로 표시됩니다.
+      </p>
+
+      <div id="toolCards" class="tool-cards-wrapper">
+        <!-- 동적으로 카드가 채워집니다. -->
       </div>
-    </footer>
-  </div>
+
+      <div class="footer-note">
+        <strong>실행 규칙</strong><br />
+        · 서버 통신, 백그라운드 타이머 없이, 이 화면에 보이는 입력창·버튼만 동작합니다. <br />
+        · 모든 설정은 브라우저 <code>localStorage</code>에 자동 저장되며, 같은 브라우저에서 다시 열면 복원됩니다.
+      </div>
+    </section>
+  </main>
 
   <script>
     (function () {
-      const STORAGE_KEY = "wic-settings-v2";
+      const STORAGE_KEY = "wic_setting_tool_v2_state";
 
-      const $ = (id) => document.getElementById(id);
-
-      const els = {
-        toolList: $("toolList"),
-        githubBase: $("githubBase"),
-        denoBase: $("denoBase"),
-        uploadBase: $("uploadBase"),
-        btnGenerate: $("btnGenerate"),
-        btnRunTests: $("btnRunTests"),
-        btnReset: $("btnReset"),
-        autoSaveInfo: $("autoSaveInfo"),
-        autoSaveDot: $("autoSaveDot"),
-        testSummaryText: $("testSummaryText"),
-        cardsContainer: $("cardsContainer"),
+      const state = {
+        toolLines: "",
+        githubBase: "",
+        denoBase: "",
+        uploadBase: "",
+        tools: {}, // key: id(string) -> { name, githubPath, denoSlug, uploadSlug, status, message }
+        lastSaved: null
       };
 
-      /** 간단한 slug 생성: 한글/공백 등은 안전한 형태로 변환 */
-      function makeSlug(name) {
-        const trimmed = (name || "").trim();
-        if (!trimmed) return "";
-        // "1번 고객 자동화 안내서" → 번호 제거 후 이름만
-        const numberRemoved = trimmed.replace(/^\d+\s*번\s*/, "");
-        return numberRemoved
-          .toLowerCase()
-          .replace(/[\s·]+/g, "-")
-          .replace(/[^a-z0-9\-]/g, "")
-          .replace(/\-+/g, "-")
-          .replace(/^\-+|\-+$/g, "");
-      }
+      const $toolLines = document.getElementById("toolLines");
+      const $githubBase = document.getElementById("githubBase");
+      const $denoBase = document.getElementById("denoBase");
+      const $uploadBase = document.getElementById("uploadBase");
+      const $saveStatus = document.getElementById("saveStatus");
+      const $toolCards = document.getElementById("toolCards");
+      const $btnBuildCards = document.getElementById("btnBuildCards");
+      const $btnRunAllTests = document.getElementById("btnRunAllTests");
+      const $btnResetAll = document.getElementById("btnResetAll");
 
-      /** 도구 이름에서 번호와 본문 분리 */
-      function parseToolName(raw) {
-        const text = (raw || "").trim();
-        if (!text) return { index: "", label: "" };
-        const match = text.match(/^(\d+)\s*번\s*(.+)$/);
-        if (match) {
-          return { index: match[1] + "번", label: match[2].trim() };
+      function loadState() {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            setDefaultInitial();
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          if (typeof parsed === "object" && parsed !== null) {
+            if (typeof parsed.toolLines === "string") state.toolLines = parsed.toolLines;
+            if (typeof parsed.githubBase === "string") state.githubBase = parsed.githubBase;
+            if (typeof parsed.denoBase === "string") state.denoBase = parsed.denoBase;
+            if (typeof parsed.uploadBase === "string") state.uploadBase = parsed.uploadBase;
+            if (parsed.tools && typeof parsed.tools === "object") state.tools = parsed.tools;
+            if (parsed.lastSaved) state.lastSaved = parsed.lastSaved;
+          } else {
+            setDefaultInitial();
+          }
+        } catch (e) {
+          setDefaultInitial();
         }
-        return { index: "", label: text };
       }
 
-      /** 현재 상태 읽기 */
-      function readStateFromUI() {
-        const rawList = els.toolList.value || "";
-        const lines = rawList
-          .split(/\r?\n/)
+      function setDefaultInitial() {
+        state.toolLines = [
+          "1번 고객 자동화 안내서",
+          "2번 입찰 프로그램",
+          "3번 코딩 기초 연습 도구",
+          "4번 연구비 박사 엑셀 생성기",
+          "5번 보고서 생성기",
+          "7번 세팅 도구"
+        ].join("\n");
+        state.githubBase = "https://github.com/obk369369-spec";
+        state.denoBase = "https://dash.deno.com/projects";
+        state.uploadBase = "https://{slug}.obk369369-spec.deno.net";
+        state.tools = {};
+        state.lastSaved = null;
+      }
+
+      function saveState() {
+        try {
+          state.lastSaved = Date.now();
+          const data = JSON.stringify(state);
+          window.localStorage.setItem(STORAGE_KEY, data);
+          updateSaveStatus();
+        } catch (e) {
+          // localStorage 실패 시 조용히 무시 (UI만 사용)
+        }
+      }
+
+      let saveTimer = null;
+      function scheduleSave() {
+        if (saveTimer) {
+          clearTimeout(saveTimer);
+        }
+        saveTimer = setTimeout(saveState, 400);
+      }
+
+      function updateSaveStatus() {
+        if (!state.lastSaved) {
+          $saveStatus.textContent = "자동 저장: 저장 기록 없음";
+          return;
+        }
+        const d = new Date(state.lastSaved);
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        const ss = String(d.getSeconds()).padStart(2, "0");
+        $saveStatus.innerHTML =
+          '자동 저장: <strong>' + hh + "시 " + mm + "분 " + ss + "초</strong>";
+      }
+
+      function applyStateToInputs() {
+        $toolLines.value = state.toolLines || "";
+        $githubBase.value = state.githubBase || "";
+        $denoBase.value = state.denoBase || "";
+        $uploadBase.value = state.uploadBase || "";
+        updateSaveStatus();
+      }
+
+      function parseToolLines(text) {
+        const lines = (text || "")
+          .split("\n")
           .map((l) => l.trim())
           .filter((l) => l.length > 0);
 
-        const githubBase = (els.githubBase.value || "").trim();
-        const denoBase = (els.denoBase.value || "").trim();
-        const uploadBase = (els.uploadBase.value || "").trim();
+        const result = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          let id = String(i + 1);
+          let name = line;
 
-        const cards = [];
-        const cardNodes = els.cardsContainer.querySelectorAll(
-          "[data-card-index]"
-        );
-
-        cardNodes.forEach((cardNode) => {
-          const idx = cardNode.getAttribute("data-card-index");
-          const nameRaw = cardNode.getAttribute("data-card-raw-name") || "";
-          const githubPathInput = cardNode.querySelector(
-            "input[data-field='githubPath']"
-          );
-          const denoUrlInput = cardNode.querySelector(
-            "input[data-field='denoUrl']"
-          );
-          const uploadUrlInput = cardNode.querySelector(
-            "input[data-field='uploadUrl']"
-          );
-
-          cards.push({
-            index: idx,
-            rawName: nameRaw,
-            githubPath: githubPathInput ? githubPathInput.value : "",
-            denoUrl: denoUrlInput ? denoUrlInput.value : "",
-            uploadUrl: uploadUrlInput ? uploadUrlInput.value : "",
-            status: cardNode.getAttribute("data-status") || "idle",
-          });
-        });
-
-        return {
-          toolLines: lines,
-          githubBase,
-          denoBase,
-          uploadBase,
-          cards,
-          lastTestSummary: els.testSummaryText.textContent || "",
-        };
-      }
-
-      /** 상태를 localStorage에 저장 */
-      function saveState() {
-        const state = readStateFromUI();
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          updateAutoSaveIndicator("saved");
-        } catch (e) {
-          updateAutoSaveIndicator("error");
-        }
-      }
-
-      /** localStorage에서 상태 복원 */
-      function loadState() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          updateAutoSaveIndicator("idle");
-          return;
-        }
-        try {
-          const state = JSON.parse(raw);
-          els.toolList.value = (state.toolLines || []).join("\n");
-          els.githubBase.value = state.githubBase || "";
-          els.denoBase.value = state.denoBase || "";
-          els.uploadBase.value = state.uploadBase || "";
-          els.testSummaryText.textContent = state.lastTestSummary || "아직 수행된 테스트가 없습니다.";
-          renderCardsFromState(state);
-          updateAutoSaveIndicator("loaded");
-        } catch (e) {
-          updateAutoSaveIndicator("error");
-        }
-      }
-
-      /** 자동 저장 표시 갱신 */
-      function updateAutoSaveIndicator(mode) {
-        const dot = els.autoSaveDot;
-        const info = els.autoSaveInfo;
-
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        const ss = String(now.getSeconds()).padStart(2, "0");
-        let text = "";
-
-        dot.classList.remove("dot-ok", "dot-warn", "dot-error");
-
-        if (mode === "saved") {
-          dot.classList.add("dot-ok");
-          text = `자동 저장: ${hh}시 ${mm}분 ${ss}초`;
-        } else if (mode === "loaded") {
-          dot.classList.add("dot-ok");
-          text = `자동 저장: 이전 상태 로드 완료 (${hh}시 ${mm}분 ${ss}초 기준)`;
-        } else if (mode === "error") {
-          dot.classList.add("dot-error");
-          text = "자동 저장: 오류 (localStorage 사용 불가)";
-        } else {
-          text = "자동 저장: 대기 중";
-        }
-
-        info.querySelector("span:nth-child(2)").textContent = text;
-      }
-
-      /** 도구 목록에서 카드 다시 생성 */
-      function generateCards() {
-        const state = readStateFromUI();
-        const toolLines = state.toolLines;
-        const existing = new Map();
-        state.cards.forEach((c) => {
-          if (c.rawName) existing.set(c.rawName, c);
-        });
-
-        els.cardsContainer.innerHTML = "";
-
-        toolLines.forEach((rawName, idx) => {
-          const old = existing.get(rawName);
-          const parsed = parseToolName(rawName);
-          const slug = makeSlug(rawName);
-
-          let githubPath = "";
-          let denoUrl = "";
-          let uploadUrl = "";
-
-          if (old) {
-            githubPath = old.githubPath || slug;
-            denoUrl = old.denoUrl || "";
-            uploadUrl = old.uploadUrl || "";
-          } else {
-            githubPath = slug;
-            denoUrl = state.denoBase
-              ? joinUrl(state.denoBase, slug || `tool-${idx + 1}`)
-              : "";
-            uploadUrl = state.uploadBase
-              ? joinUrl(state.uploadBase, slug || `tool-${idx + 1}`)
-              : "";
-          }
-
-          const cardEl = document.createElement("div");
-          cardEl.className = "tool-card";
-          cardEl.setAttribute("data-card-index", String(idx + 1));
-          cardEl.setAttribute("data-card-raw-name", rawName);
-          cardEl.setAttribute("data-status", old ? old.status || "idle" : "idle");
-
-          const fullGithubUrl = state.githubBase && githubPath
-            ? joinUrl(state.githubBase, githubPath)
-            : "";
-
-          cardEl.innerHTML = `
-            <div class="tool-card-header">
-              <div class="tool-name">
-                <span class="tool-index-pill">${parsed.index || (idx + 1 + "번")}</span>
-                <span>${parsed.label || rawName}</span>
-              </div>
-              <div class="tool-status ${statusClass(cardEl.getAttribute("data-status"))}">
-                <span class="dot ${dotClass(cardEl.getAttribute("data-status"))}"></span>
-                <span class="tool-status-text">${statusText(cardEl.getAttribute("data-status"))}</span>
-              </div>
-            </div>
-            <div class="tool-fields">
-              <div>
-                <div class="mini-label">GitHub 경로 (프로젝트/폴더)</div>
-                <input
-                  class="mini-input"
-                  data-field="githubPath"
-                  type="text"
-                  value="${escapeHtml(githubPath)}"
-                  placeholder="${makeSlug(parsed.label) || "tool-" + (idx + 1)}"
-                />
-                <div class="url-display" data-field="githubFullUrl">
-                  ${fullGithubUrl ? escapeHtml(fullGithubUrl) : "GitHub 기본 주소 + 경로로 전체 URL이 표시됩니다."}
-                </div>
-              </div>
-              <div>
-                <div class="mini-label">Deno 프로젝트 URL</div>
-                <input
-                  class="mini-input"
-                  data-field="denoUrl"
-                  type="url"
-                  value="${escapeHtml(denoUrl)}"
-                  placeholder="${state.denoBase ? state.denoBase + "/project-slug" : "https://dash.deno.com/projects/프로젝트"}"
-                />
-              </div>
-              <div>
-                <div class="mini-label">업로드 URL (실제 접속 주소)</div>
-                <input
-                  class="mini-input"
-                  data-field="uploadUrl"
-                  type="url"
-                  value="${escapeHtml(uploadUrl)}"
-                  placeholder="${state.uploadBase ? state.uploadBase + "/..." : "https://tool-name.obk369369-spec.deno.net"}"
-                />
-              </div>
-            </div>
-          `;
-
-          // 입력 변화 시 GitHub full URL + 자동 저장
-          const githubPathInput = cardEl.querySelector(
-            "input[data-field='githubPath']"
-          );
-          const githubFullUrlDisplay = cardEl.querySelector(
-            "[data-field='githubFullUrl']"
-          );
-          const denoUrlInput = cardEl.querySelector(
-            "input[data-field='denoUrl']"
-          );
-          const uploadUrlInput = cardEl.querySelector(
-            "input[data-field='uploadUrl']"
-          );
-
-          if (githubPathInput && githubFullUrlDisplay) {
-            githubPathInput.addEventListener("input", () => {
-              const currentBase = (els.githubBase.value || "").trim();
-              const path = githubPathInput.value.trim();
-              const full =
-                currentBase && path ? joinUrl(currentBase, path) : "";
-              githubFullUrlDisplay.textContent =
-                full || "GitHub 기본 주소 + 경로로 전체 URL이 표시됩니다.";
-              saveState();
-            });
-          }
-
-          [denoUrlInput, uploadUrlInput].forEach((inputEl) => {
-            if (!inputEl) return;
-            inputEl.addEventListener("input", () => {
-              saveState();
-            });
-          });
-
-          els.cardsContainer.appendChild(cardEl);
-        });
-
-        saveState();
-      }
-
-      /** 상태에서 카드 렌더링 (복원용) */
-      function renderCardsFromState(state) {
-        els.cardsContainer.innerHTML = "";
-        const toolLines = state.toolLines || [];
-        const cards = state.cards || [];
-        const byName = new Map();
-        cards.forEach((c) => {
-          if (c.rawName) byName.set(c.rawName, c);
-        });
-
-        toolLines.forEach((rawName, idx) => {
-          const stored = byName.get(rawName) || {
-            index: idx + 1,
-            rawName,
-            githubPath: makeSlug(rawName),
-            denoUrl: "",
-            uploadUrl: "",
-            status: "idle",
-          };
-          const parsed = parseToolName(rawName);
-
-          const cardEl = document.createElement("div");
-          cardEl.className = "tool-card";
-          cardEl.setAttribute(
-            "data-card-index",
-            stored.index ? String(stored.index).replace("번", "") : String(idx + 1)
-          );
-          cardEl.setAttribute("data-card-raw-name", rawName);
-          cardEl.setAttribute("data-status", stored.status || "idle");
-
-          const fullGithubUrl = state.githubBase && stored.githubPath
-            ? joinUrl(state.githubBase, stored.githubPath)
-            : "";
-
-          cardEl.innerHTML = `
-            <div class="tool-card-header">
-              <div class="tool-name">
-                <span class="tool-index-pill">${parsed.index || (idx + 1 + "번")}</span>
-                <span>${parsed.label || rawName}</span>
-              </div>
-              <div class="tool-status ${statusClass(stored.status || "idle")}">
-                <span class="dot ${dotClass(stored.status || "idle")}"></span>
-                <span class="tool-status-text">${statusText(stored.status || "idle")}</span>
-              </div>
-            </div>
-            <div class="tool-fields">
-              <div>
-                <div class="mini-label">GitHub 경로 (프로젝트/폴더)</div>
-                <input
-                  class="mini-input"
-                  data-field="githubPath"
-                  type="text"
-                  value="${escapeHtml(stored.githubPath || "")}"
-                  placeholder="${makeSlug(parsed.label) || "tool-" + (idx + 1)}"
-                />
-                <div class="url-display" data-field="githubFullUrl">
-                  ${fullGithubUrl ? escapeHtml(fullGithubUrl) : "GitHub 기본 주소 + 경로로 전체 URL이 표시됩니다."}
-                </div>
-              </div>
-              <div>
-                <div class="mini-label">Deno 프로젝트 URL</div>
-                <input
-                  class="mini-input"
-                  data-field="denoUrl"
-                  type="url"
-                  value="${escapeHtml(stored.denoUrl || "")}"
-                  placeholder="${state.denoBase ? state.denoBase + "/project-slug" : "https://dash.deno.com/projects/프로젝트"}"
-                />
-              </div>
-              <div>
-                <div class="mini-label">업로드 URL (실제 접속 주소)</div>
-                <input
-                  class="mini-input"
-                  data-field="uploadUrl"
-                  type="url"
-                  value="${escapeHtml(stored.uploadUrl || "")}"
-                  placeholder="${state.uploadBase ? state.uploadBase + "/..." : "https://tool-name.obk369369-spec.deno.net"}"
-                />
-              </div>
-            </div>
-          `;
-
-          const githubPathInput = cardEl.querySelector(
-            "input[data-field='githubPath']"
-          );
-          const githubFullUrlDisplay = cardEl.querySelector(
-            "[data-field='githubFullUrl']"
-          );
-          const denoUrlInput = cardEl.querySelector(
-            "input[data-field='denoUrl']"
-          );
-          const uploadUrlInput = cardEl.querySelector(
-            "input[data-field='uploadUrl']"
-          );
-
-          if (githubPathInput && githubFullUrlDisplay) {
-            githubPathInput.addEventListener("input", () => {
-              const currentBase = (els.githubBase.value || "").trim();
-              const path = githubPathInput.value.trim();
-              const full =
-                currentBase && path ? joinUrl(currentBase, path) : "";
-              githubFullUrlDisplay.textContent =
-                full || "GitHub 기본 주소 + 경로로 전체 URL이 표시됩니다.";
-              saveState();
-            });
-          }
-
-          [denoUrlInput, uploadUrlInput].forEach((inputEl) => {
-            if (!inputEl) return;
-            inputEl.addEventListener("input", () => {
-              saveState();
-            });
-          });
-
-          els.cardsContainer.appendChild(cardEl);
-        });
-      }
-
-      /** URL 합치기 (베이스/슬러그) */
-      function joinUrl(base, path) {
-        const b = (base || "").replace(/\/+$/, "");
-        const p = (path || "").replace(/^\/+/, "");
-        if (!b) return p;
-        if (!p) return b;
-        return b + "/" + p;
-      }
-
-      /** HTML escape */
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      /** 상태별 css class */
-      function statusClass(status) {
-        if (status === "ok") return "ok";
-        if (status === "warn") return "warn";
-        if (status === "error") return "error";
-        return "";
-      }
-
-      function dotClass(status) {
-        if (status === "ok") return "dot-ok";
-        if (status === "warn") return "dot-warn";
-        if (status === "error") return "dot-error";
-        return "";
-      }
-
-      function statusText(status) {
-        if (status === "ok") return "테스트 통과";
-        if (status === "warn") return "경고 있음";
-        if (status === "error") return "오류 있음";
-        return "테스트 미실행";
-      }
-
-      /** 전체 자동 테스트 1회 */
-      function runTestsOnce() {
-        const cards = els.cardsContainer.querySelectorAll("[data-card-index]");
-        if (!cards.length) {
-          els.testSummaryText.textContent =
-            "테스트 대상 카드가 없습니다. 먼저 '카드 생성 / 갱신'을 눌러 도구 카드를 만들세요.";
-          saveState();
-          return;
-        }
-
-        let okCount = 0;
-        let warnCount = 0;
-        let errorCount = 0;
-
-        cards.forEach((card) => {
-          const githubBase = (els.githubBase.value || "").trim();
-          const githubPathInput = card.querySelector(
-            "input[data-field='githubPath']"
-          );
-          const denoUrlInput = card.querySelector(
-            "input[data-field='denoUrl']"
-          );
-          const uploadUrlInput = card.querySelector(
-            "input[data-field='uploadUrl']"
-          );
-
-          const fullGithubUrl =
-            githubBase && githubPathInput && githubPathInput.value.trim()
-              ? joinUrl(githubBase, githubPathInput.value.trim())
-              : "";
-
-          const urls = [
-            fullGithubUrl,
-            denoUrlInput ? denoUrlInput.value.trim() : "",
-            uploadUrlInput ? uploadUrlInput.value.trim() : "",
-          ];
-
-          let hasProblem = false;
-          let hasCritical = false;
-
-          urls.forEach((u) => {
-            if (!u) return;
-            if (!/^https?:\/\//i.test(u)) {
-              hasProblem = true;
-              if (/^javascript:/i.test(u)) {
-                hasCritical = true;
-              }
+          const m = line.match(/^(\d+)(?:번|\.|)\s*(.*)$/);
+          if (m) {
+            id = m[1];
+            if (m[2] && m[2].length > 0) {
+              name = m[2];
+            } else {
+              name = line;
             }
+          }
+
+          result.push({
+            id,
+            name
           });
+        }
+        return result;
+      }
 
-          let status = "ok";
-          if (hasCritical) {
-            status = "error";
-            errorCount += 1;
-          } else if (hasProblem) {
-            status = "warn";
-            warnCount += 1;
-          } else {
-            okCount += 1;
+      function buildToolCards() {
+        const descList = parseToolLines(state.toolLines);
+        const newTools = {};
+
+        for (const desc of descList) {
+          const existing = state.tools[desc.id] || {};
+          newTools[desc.id] = {
+            name: desc.name,
+            githubPath: existing.githubPath || ("tool-" + desc.id),
+            denoSlug: existing.denoSlug || "",
+            uploadSlug: existing.uploadSlug || "",
+            status: existing.status || "미실행",
+            message: existing.message || ""
+          };
+        }
+        state.tools = newTools;
+        renderToolCards();
+        scheduleSave();
+      }
+
+      function renderToolCards() {
+        while ($toolCards.firstChild) {
+          $toolCards.removeChild($toolCards.firstChild);
+        }
+
+        const entries = Object.entries(state.tools).sort((a, b) => {
+          const aNum = parseInt(a[0], 10);
+          const bNum = parseInt(b[0], 10);
+          if (isNaN(aNum) || isNaN(bNum)) {
+            return a[0].localeCompare(b[0], "ko");
           }
-
-          card.setAttribute("data-status", status);
-          const statusEl = card.querySelector(".tool-status");
-          const dotEl = card.querySelector(".tool-status .dot");
-          const textEl = card.querySelector(".tool-status-text");
-
-          if (statusEl && dotEl && textEl) {
-            statusEl.classList.remove("ok", "warn", "error");
-            statusEl.classList.add(statusClass(status));
-
-            dotEl.classList.remove("dot-ok", "dot-warn", "dot-error");
-            dotEl.classList.add(dotClass(status));
-
-            textEl.textContent = statusText(status);
-          }
+          return aNum - bNum;
         });
 
-        const total = cards.length;
-        els.testSummaryText.textContent = `총 ${total}개 카드 중 정상 ${okCount}개 · 경고 ${warnCount}개 · 오류 ${errorCount}개 (문자열 규칙 기준)`;
+        if (entries.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "muted";
+          empty.textContent =
+            "도구 목록이 비어 있습니다. 왼쪽에서 도구 목록을 입력한 후 “카드 생성 / 갱신”을 눌러주세요.";
+          $toolCards.appendChild(empty);
+          return;
+        }
+
+        for (const [id, tool] of entries) {
+          const cardEl = document.createElement("article");
+          cardEl.className = "tool-card";
+          cardEl.dataset.toolId = id;
+
+          const headerEl = document.createElement("div");
+          headerEl.className = "tool-card-header";
+
+          const titleBox = document.createElement("div");
+          const titleEl = document.createElement("div");
+          titleEl.className = "tool-card-title";
+          titleEl.textContent = id + "번 · " + (tool.name || "이름 없음");
+
+          const subEl = document.createElement("div");
+          subEl.className = "tool-card-subtitle";
+          subEl.textContent = "도구 카드 블록 · GitHub / Deno / 업로드 한 번에 관리";
+
+          titleBox.appendChild(titleEl);
+          titleBox.appendChild(subEl);
+
+          const statusEl = document.createElement("div");
+          statusEl.className = "status-pill status-muted";
+          statusEl.textContent = "테스트 미실행";
+
+          if (tool.status === "ok") {
+            statusEl.className = "status-pill status-ok";
+            statusEl.textContent = "테스트 완료 (OK)";
+          } else if (tool.status === "warn") {
+            statusEl.className = "status-pill status-warn";
+            statusEl.textContent = "테스트 완료 (경고)";
+          } else if (tool.status === "error") {
+            statusEl.className = "status-pill status-error";
+            statusEl.textContent = "테스트 실패";
+          }
+
+          headerEl.appendChild(titleBox);
+          headerEl.appendChild(statusEl);
+
+          const gridEl = document.createElement("div");
+          gridEl.className = "tool-card-grid";
+
+          const leftCol = document.createElement("div");
+          const rightCol = document.createElement("div");
+
+          // GitHub 경로
+          const ghLabel = document.createElement("div");
+          ghLabel.className = "small-label";
+          ghLabel.textContent = "GitHub 경로 (프로젝트/폴더)";
+          const ghInput = document.createElement("input");
+          ghInput.type = "text";
+          ghInput.value = tool.githubPath || "";
+          ghInput.placeholder = "예: tool-" + id;
+
+          // Deno 슬러그
+          const denoLabel = document.createElement("div");
+          denoLabel.className = "small-label";
+          denoLabel.textContent = "Deno 프로젝트 슬러그";
+          const denoInput = document.createElement("input");
+          denoInput.type = "text";
+          denoInput.value = tool.denoSlug || "";
+          denoInput.placeholder = "예: tool-" + id;
+
+          // 업로드 슬러그
+          const upLabel = document.createElement("div");
+          upLabel.className = "small-label";
+          upLabel.textContent = "업로드 슬러그 (도메인 앞부분)";
+          const upInput = document.createElement("input");
+          upInput.type = "text";
+          upInput.value = tool.uploadSlug || "";
+          upInput.placeholder = "예: tool-" + id;
+
+          leftCol.appendChild(ghLabel);
+          leftCol.appendChild(ghInput);
+          leftCol.appendChild(denoLabel);
+          leftCol.appendChild(denoInput);
+          leftCol.appendChild(upLabel);
+          leftCol.appendChild(upInput);
+
+          // URL 표시 영역
+          const urlBlockLabel = document.createElement("div");
+          urlBlockLabel.className = "small-label";
+          urlBlockLabel.textContent = "자동 생성 URL 미리보기";
+
+          const ghUrlDisplay = document.createElement("div");
+          ghUrlDisplay.className = "url-display";
+
+          const denoUrlDisplay = document.createElement("div");
+          denoUrlDisplay.className = "url-display";
+
+          const upUrlDisplay = document.createElement("div");
+          upUrlDisplay.className = "url-display";
+
+          rightCol.appendChild(urlBlockLabel);
+          rightCol.appendChild(ghUrlDisplay);
+          rightCol.appendChild(denoUrlDisplay);
+          rightCol.appendChild(upUrlDisplay);
+
+          gridEl.appendChild(leftCol);
+          gridEl.appendChild(rightCol);
+
+          // 하단 액션 영역
+          const actions = document.createElement("div");
+          actions.className = "tool-actions";
+
+          const actionsLeft = document.createElement("div");
+          actionsLeft.className = "tool-actions-left";
+
+          const testBtn = document.createElement("button");
+          testBtn.type = "button";
+          testBtn.className = "secondary";
+          testBtn.textContent = "이 카드만 테스트";
+
+          const clearBtn = document.createElement("button");
+          clearBtn.type = "button";
+          clearBtn.className = "secondary";
+          clearBtn.textContent = "이 카드 값 초기화";
+
+          actionsLeft.appendChild(testBtn);
+          actionsLeft.appendChild(clearBtn);
+
+          const testMsg = document.createElement("div");
+          testMsg.className = "test-message";
+          testMsg.textContent = tool.message || "아직 테스트 기록이 없습니다.";
+
+          actions.appendChild(actionsLeft);
+          actions.appendChild(testMsg);
+
+          cardEl.appendChild(headerEl);
+          cardEl.appendChild(gridEl);
+          cardEl.appendChild(actions);
+
+          $toolCards.appendChild(cardEl);
+
+          // URL 표시 초기화
+          updateUrlDisplaysForCard({
+            cardEl,
+            id,
+            tool,
+            ghInput,
+            denoInput,
+            upInput,
+            ghUrlDisplay,
+            denoUrlDisplay,
+            upUrlDisplay
+          });
+
+          ghInput.addEventListener("input", function () {
+            state.tools[id].githubPath = ghInput.value;
+            updateUrlDisplaysForCard({
+              cardEl,
+              id,
+              tool: state.tools[id],
+              ghInput,
+              denoInput,
+              upInput,
+              ghUrlDisplay,
+              denoUrlDisplay,
+              upUrlDisplay
+            });
+            scheduleSave();
+          });
+
+          denoInput.addEventListener("input", function () {
+            state.tools[id].denoSlug = denoInput.value;
+            updateUrlDisplaysForCard({
+              cardEl,
+              id,
+              tool: state.tools[id],
+              ghInput,
+              denoInput,
+              upInput,
+              ghUrlDisplay,
+              denoUrlDisplay,
+              upUrlDisplay
+            });
+            scheduleSave();
+          });
+
+          upInput.addEventListener("input", function () {
+            state.tools[id].uploadSlug = upInput.value;
+            updateUrlDisplaysForCard({
+              cardEl,
+              id,
+              tool: state.tools[id],
+              ghInput,
+              denoInput,
+              upInput,
+              ghUrlDisplay,
+              denoUrlDisplay,
+              upUrlDisplay
+            });
+            scheduleSave();
+          });
+
+          testBtn.addEventListener("click", function () {
+            runTestForCard(id, cardEl, ghUrlDisplay, denoUrlDisplay, upUrlDisplay, testMsg, statusEl);
+            scheduleSave();
+          });
+
+          clearBtn.addEventListener("click", function () {
+            state.tools[id].githubPath = "tool-" + id;
+            state.tools[id].denoSlug = "";
+            state.tools[id].uploadSlug = "";
+            state.tools[id].status = "미실행";
+            state.tools[id].message = "";
+
+            ghInput.value = state.tools[id].githubPath;
+            denoInput.value = "";
+            upInput.value = "";
+            statusEl.className = "status-pill status-muted";
+            statusEl.textContent = "테스트 미실행";
+            testMsg.textContent = "아직 테스트 기록이 없습니다.";
+
+            updateUrlDisplaysForCard({
+              cardEl,
+              id,
+              tool: state.tools[id],
+              ghInput,
+              denoInput,
+              upInput,
+              ghUrlDisplay,
+              denoUrlDisplay,
+              upUrlDisplay
+            });
+            scheduleSave();
+          });
+        }
+      }
+
+      function sanitizeBase(base) {
+        if (!base) return "";
+        return base.trim().replace(/\/+$/, "");
+      }
+
+      function buildGithubUrl(toolId, githubPath) {
+        const base = sanitizeBase(state.githubBase);
+        const path = (githubPath || "").trim().replace(/^\/+/, "");
+        if (!base || !path) return "";
+        return base + "/" + path;
+      }
+
+      function buildDenoUrl(toolId, denoSlug) {
+        const base = sanitizeBase(state.denoBase);
+        const slug = (denoSlug || "").trim().replace(/^\/+/, "");
+        if (!base || !slug) return "";
+        return base + "/" + slug;
+      }
+
+      function buildUploadUrl(toolId, uploadSlug) {
+        const slug = (uploadSlug || "").trim();
+        if (!slug) return "";
+
+        const base = (state.uploadBase || "").trim();
+        if (!base) {
+          return "https://" + slug + ".obk369369-spec.deno.net";
+        }
+
+        if (base.includes("{slug}")) {
+          return base.replace("{slug}", slug);
+        }
+
+        if (base.includes("*")) {
+          return base.replace("*", slug);
+        }
+
+        if (base.indexOf("https://") === 0 || base.indexOf("http://") === 0) {
+          if (base.indexOf("{") === -1 && base.indexOf("*") === -1) {
+            if (/\/$/.test(base)) {
+              return base + slug;
+            }
+            return base + "/" + slug;
+          }
+        }
+
+        return "https://" + slug + ".obk369369-spec.deno.net";
+      }
+
+      function updateUrlDisplaysForCard(ctx) {
+        const { id, tool, ghInput, denoInput, upInput, ghUrlDisplay, denoUrlDisplay, upUrlDisplay } = ctx;
+
+        const ghUrl = buildGithubUrl(id, ghInput.value);
+        const denoUrl = buildDenoUrl(id, denoInput.value);
+        const upUrl = buildUploadUrl(id, upInput.value);
+
+        renderUrlDisplay(ghUrlDisplay, ghUrl, "GitHub");
+        renderUrlDisplay(denoUrlDisplay, denoUrl, "Deno");
+        renderUrlDisplay(upUrlDisplay, upUrl, "업로드");
+      }
+
+      function renderUrlDisplay(container, url, label) {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+        if (!url) {
+          container.textContent = label + " URL: (미설정)";
+          return;
+        }
+        const strong = document.createElement("span");
+        strong.textContent = label + " URL: ";
+        container.appendChild(strong);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = url;
+
+        container.appendChild(link);
+      }
+
+      function classifyUrl(url) {
+        if (!url) return "empty";
+        const v = url.trim().toLowerCase();
+        if (v.length === 0) return "empty";
+        if (!v.startsWith("http://") && !v.startsWith("https://")) return "invalid";
+        return "ok";
+      }
+
+      function runTestForCard(id, cardEl, ghUrlDisplay, denoUrlDisplay, upUrlDisplay, testMsgEl, statusEl) {
+        const tool = state.tools[id] || {};
+        const ghText = ghUrlDisplay.textContent || "";
+        const denoText = denoUrlDisplay.textContent || "";
+        const upText = upUrlDisplay.textContent || "";
+
+        const ghUrlMatch = ghText.match(/https?:\/\/\S+/);
+        const denoUrlMatch = denoText.match(/https?:\/\/\S+/);
+        const upUrlMatch = upText.match(/https?:\/\/\S+/);
+
+        const ghUrl = ghUrlMatch ? ghUrlMatch[0] : "";
+        const denoUrl = denoUrlMatch ? denoUrlMatch[0] : "";
+        const upUrl = upUrlMatch ? upUrlMatch[0] : "";
+
+        const ghStatus = classifyUrl(ghUrl);
+        const denoStatus = classifyUrl(denoUrl);
+        const upStatus = classifyUrl(upUrl);
+
+        const statuses = [ghStatus, denoStatus, upStatus];
+
+        if (statuses.every((s) => s === "ok")) {
+          tool.status = "ok";
+          tool.message = "세 URL 모두 http로 시작하며, 형식상 문제 없습니다. (문자열 기준 OK)";
+          statusEl.className = "status-pill status-ok";
+          statusEl.textContent = "테스트 완료 (OK)";
+        } else if (statuses.some((s) => s === "invalid")) {
+          tool.status = "error";
+          tool.message =
+            "일부 URL이 http로 시작하지 않거나 형식이 잘못되었습니다. (형식 오류 · 문자열 기준)";
+          statusEl.className = "status-pill status-error";
+          statusEl.textContent = "테스트 실패";
+        } else {
+          tool.status = "warn";
+          tool.message =
+            "일부 URL이 비어 있습니다. 필요한 항목만 채우고 사용하는 경우라면, 문자열 기준으로는 사용 가능합니다.";
+          statusEl.className = "status-pill status-warn";
+          statusEl.textContent = "테스트 완료 (경고)";
+        }
+
+        state.tools[id] = tool;
+        testMsgEl.textContent = tool.message;
+      }
+
+      function runAllTests() {
+        const cards = $toolCards.querySelectorAll(".tool-card");
+        cards.forEach((cardEl) => {
+          const id = cardEl.dataset.toolId;
+          const ghDisplay = cardEl.querySelector(".url-display:nth-of-type(1)");
+          const denoDisplay = cardEl.querySelector(".url-display:nth-of-type(2)");
+          const upDisplay = cardEl.querySelector(".url-display:nth-of-type(3)");
+          const msgEl = cardEl.querySelector(".test-message");
+          const statusEl = cardEl.querySelector(".status-pill");
+          if (!id || !ghDisplay || !denoDisplay || !upDisplay || !msgEl || !statusEl) return;
+          runTestForCard(id, cardEl, ghDisplay, denoDisplay, upDisplay, msgEl, statusEl);
+        });
+        scheduleSave();
+      }
+
+      function resetAllData() {
+        if (!window.confirm("모든 설정과 도구 카드 데이터를 초기화할까요? (localStorage 삭제)")) {
+          return;
+        }
+        setDefaultInitial();
+        applyStateToInputs();
+        buildToolCards();
         saveState();
       }
 
-      /** 전체 초기화 */
-      function resetAll() {
-        if (!confirm("모든 입력과 카드, 저장된 데이터가 초기화됩니다. 계속하시겠습니까?")) {
-          return;
-        }
-        els.toolList.value = "";
-        els.githubBase.value = "";
-        els.denoBase.value = "";
-        els.uploadBase.value = "";
-        els.cardsContainer.innerHTML = "";
-        els.testSummaryText.textContent = "아직 수행된 테스트가 없습니다.";
-        try {
-          localStorage.removeItem(STORAGE_KEY);
-        } catch (e) {}
-        updateAutoSaveIndicator("idle");
-      }
-
-      /** 이벤트 연결 */
       function bindEvents() {
-        els.btnGenerate.addEventListener("click", () => {
-          generateCards();
+        $toolLines.addEventListener("input", function () {
+          state.toolLines = $toolLines.value;
+          scheduleSave();
         });
 
-        els.btnRunTests.addEventListener("click", () => {
-          runTestsOnce();
+        $githubBase.addEventListener("input", function () {
+          state.githubBase = $githubBase.value;
+          scheduleSave();
         });
 
-        els.btnReset.addEventListener("click", () => {
-          resetAll();
+        $denoBase.addEventListener("input", function () {
+          state.denoBase = $denoBase.value;
+          scheduleSave();
         });
 
-        [els.toolList, els.githubBase, els.denoBase, els.uploadBase].forEach(
-          (input) => {
-            input.addEventListener("input", () => {
-              // GitHub 기본 주소가 바뀌면 카드의 full URL 표시도 같이 갱신
-              if (input === els.githubBase) {
-                const cards = els.cardsContainer.querySelectorAll(
-                  "[data-card-index]"
-                );
-                cards.forEach((card) => {
-                  const pathInput = card.querySelector(
-                    "input[data-field='githubPath']"
-                  );
-                  const display = card.querySelector(
-                    "[data-field='githubFullUrl']"
-                  );
-                  if (!pathInput || !display) return;
-                  const base = (els.githubBase.value || "").trim();
-                  const path = pathInput.value.trim();
-                  const full =
-                    base && path ? joinUrl(base, path) : "";
-                  display.textContent =
-                    full || "GitHub 기본 주소 + 경로로 전체 URL이 표시됩니다.";
-                });
-              }
-              saveState();
-            });
-          }
-        );
+        $uploadBase.addEventListener("input", function () {
+          state.uploadBase = $uploadBase.value;
+          scheduleSave();
+        });
+
+        $btnBuildCards.addEventListener("click", function () {
+          buildToolCards();
+        });
+
+        $btnRunAllTests.addEventListener("click", function () {
+          runAllTests();
+        });
+
+        $btnResetAll.addEventListener("click", function () {
+          resetAllData();
+        });
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        bindEvents();
+      function init() {
         loadState();
-      });
+        applyStateToInputs();
+        bindEvents();
+        buildToolCards();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
     })();
   </script>
 </body>

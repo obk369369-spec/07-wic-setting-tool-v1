@@ -48,4 +48,5 @@
 
 마지막 중앙마스터 정상 Commit SHA: `f5b303bf5ebbe6dc6ba199eaa14014071d62f1c5`
 마지막 중앙마스터 read-back blob SHA: `f6825d1f3b78ff33b9ca581de980ef2a5b2ff57d`
-체크포인트 read-back: 갱신 후 재조회 필요
+마지막 41번 체크포인트 Commit SHA: `5590eaf991b28ce60831376260118d2e6dff61d4`
+체크포인트 read-back: 완료

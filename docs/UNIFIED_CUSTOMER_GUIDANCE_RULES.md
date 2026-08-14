@@ -92,10 +92,13 @@ alliedmarketresearch.com, QY Research, Markets and Markets, BCC Research, Resear
 
 ### 운용
 - 최신 사용자 제외 지시 우선.
+- 위 고정 거래·사용 풀 밖의 발행사 자료는 고객 추천용 PASS로 사용하지 않고 즉시 제외한다. 사용자가 별도로 거래 가능하다고 확정한 경우에만 풀 갱신 후 사용한다.
+- 명시 제외 발행사/유통사는 `Research and Markets`, `Market Reports World`, `Intel Market Research`, `IDTechEx`이며 고객 추천용으로 사용하지 않는다.
+- `Research and Markets` 등 단순 유통/집계 사이트는 발행사로 취급하지 않는다.
+- `Future Markets`와 `Future Market Insights`는 서로 다른 명칭이므로 혼동하거나 대체하지 않는다. 고정 풀에 있는 `Future Markets`만 해당 이름 그대로 적용하며, `Future Market Insights`를 자동 포함하지 않는다.
 - 특정 2~3개 발행사 편중 금지.
 - 가능한 경우 고객 1명당 3개 자료를 서로 다른 발행사로 분산.
-- Research and Markets 등 단순 유통/집계 사이트는 발행사로 취급하지 않는다.
-- 거래 여부 불명은 HOLD.
+- 거래 여부 불명은 HOLD가 아니라 고객 추천 후보에서 제외하고, 별도 거래확인 대상으로만 남긴다.
 - Industry Experts는 PDF brochure/article 링크가 아니라 보고서 HTML 상세페이지를 우선한다.
 
 ## 8. 선택 우선순위

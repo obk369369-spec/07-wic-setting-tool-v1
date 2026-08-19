@@ -81,4 +81,34 @@
 ## 최종 증거
 - 중앙마스터 Source of Truth: `docs/UNIFIED_CUSTOMER_GUIDANCE_RULES.md`
 - 중앙 규칙 통합 상태: 실제 실행 완료
-- 고객별 안내서 출력 상태: 재교정 진행 중
+- 고객별 안내서 출력 상태: 실행 게이트 적용 후 고객별 expected 검증 필수
+
+## 2026-08-19 실제 출력 검증 게이트 구현 증거
+- 기준 read-back Commit: `c4b2ddeb457b9d733e1f365f1e86a73410197190`.
+- SKIP-REUSE: 기존 규칙 통합, 고객DB, 기존 PASS 결과는 재분석하지 않음.
+- 구현 파일: `scripts/customer_guidance_output_gate.js`.
+- 구현 Commit: `e8aa46023050be519b62349db9c8f6dfa484ecfe`.
+- 구현 blob: `c4985beb79073bef42a865003fc88e2ca695e60b`.
+- 운영 연결 Commit: `0ad1392d5f4d8a5466c88d7c6e272dafb78febcd`.
+
+### 실패 재현
+- 2026-08-19 실패유형을 포함한 고객 안내 fixture 실행 결과: `FAIL`.
+- 검출: 메일 제목 누락, 이메일 누락, 추천자료 1~3 한글 제목 누락, 공개 하위목차 불완전/계층·번호·들여쓰기 불일치, 잘못된 PASS 선언.
+- 총 검출 오류: 9개.
+- 저장소에 당시 실제 실패 출력 원문 파일은 없어 임의로 실제 고객 결과를 생성하지 않음.
+
+### 최소 수정 및 재실행
+- 문서 규칙 추가가 아니라 출력 텍스트와 검증된 expected JSON을 비교하는 실행 게이트를 추가.
+- 수정 fixture 재실행 결과: `PASS`, 오류 0, 종료코드 0.
+- GitHub 반영 후 blob을 read-back하여 같은 `--self-test` 재실행: `PASS`, 종료코드 0.
+- 오류가 하나라도 있으면 `FAIL`, 종료코드 1이며 출력 안의 `PASS` 문구는 완료 증거로 인정하지 않음.
+
+### expected 비교 잠금
+- 첫 두 줄의 메일 제목·이메일을 고객 expected 값과 정확 비교.
+- 추천자료 1~3 각각 한글 제목 존재 검사.
+- 각 보고서의 공개 목차 전체 줄을 expected와 길이·순서·번호·선행 공백까지 정확 비교.
+- expected JSON 없는 실제 고객 출력은 검증 완료/PASS 처리 금지.
+
+### 상태
+- 42번 실제 출력 게이트 구현·테스트·GitHub 반영·read-back: 실제 실행 완료.
+- 기존 고객 운영의 미발송/추가확인 항목: 기존 RUNNING 상태 보존.

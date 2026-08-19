@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "source_thread_id": "6a7e7a33-9134-83ee-8b07-f196aaf3d108",
+    "source_thread_title": "42번 고객 안내 통합창",
+    "recovered_at": "2026-08-19 KST",
+    "actual_fail_case_count": 3,
+    "actual_pass_regression_case_count": 0,
+    "synthetic_case_count": 18,
+    "data_recovery": "HOLD",
+    "note": "실제 사용자 확인 정상 PASS 사례와 발행사 원문 전체 expected는 아직 회수되지 않음."
+  },
+  "cases": [
+    {
+      "id": "ACTUAL-FAIL-KMG-001",
+      "customer": {
+        "institution": "한국탄소산업진흥원",
+        "name": "김명곤",
+        "email": "mgkim@kcarbon.or.kr"
+      },
+      "source_turn": "940eaac0-28f6-4d35-b474-4e1e4b84ee72",
+      "actual_output_excerpt": "메일 제목: [해외시장자료 안내] 한국탄소산업진흥원 김명곤 책임님\n이메일 주소: mgkim@kcarbon.or.kr\n추천자료 1\n영문 제목: Carbon Fiber Market by Raw Material Type ... Forecast to 2031\n한글 제목(참고 번역): 탄소섬유 시장 ...\n자세한 내용의 링크: https://www.marketsandmarkets.com/Market-Reports/carbon-fiber-396.html?utm_source=chatgpt.com\n목차:\n1. 서론\n  1.1 시장 개요\n    1.1.1 성장요인",
+      "user_correction": [
+        "목차는 영문 원문",
+        "상위+하위 2단계까지만",
+        "처음부터 마지막까지 자르지 않음",
+        "목차 아래 수치 포함 보고서 정보"
+      ],
+      "expected_errors": [
+        "MAIL_SUBJECT_MISSING_OR_MISMATCH",
+        "REPORT_1_TRACKING_LINK_FORBIDDEN",
+        "REPORT_1_TOC_DEPTH_EXCEEDED",
+        "REPORT_1_TOC_SOURCE_TEXT_MISMATCH",
+        "REPORT_1_REPORT_INFO_MISSING"
+      ],
+      "expected_status": "FAIL"
+    },
+    {
+      "id": "ACTUAL-FAIL-KMG-002",
+      "customer": {
+        "institution": "한국탄소산업진흥원",
+        "name": "김명곤",
+        "email": "mgkim@kcarbon.or.kr"
+      },
+      "source_turn": "24e97de0-6b9e-4ef7-89bd-fcc5aa0df208",
+      "actual_output_excerpt": "메일 제목: [해외시장자료 안내] 한국탄소산업진흥원 김명곤 책임님\n이메일 주소: mgkim@kcarbon.or.kr\n추천자료 1\n영문 제목: Carbon Thermoplastic Composites Market Size, Share & Trends Analysis Report, 2026–2033\n한글 제목(참고 번역): 탄소 열가소성 복합재 시장\n자세한 내용의 링크: https://www.grandviewresearch.com/industry-analysis/carbon-fiber-reinforced-thermoplastic-cfrtp-composites-market?utm_source=chatgpt.com\n목차:\n1. Carbon Thermoplastic Composites Market Summary\n  1.1 Key Market Trends & Insights\n보고서 정보: 2026년 79억 달러",
+      "user_correction": [
+        "상세페이지 표시 제목 그대로",
+        "Summary/Insights/Segmentation을 TOC로 섞지 않음",
+        "실제 TOC 영역만",
+        "추적 URL 제거"
+      ],
+      "expected_errors": [
+        "MAIL_SUBJECT_MISSING_OR_MISMATCH",
+        "REPORT_1_ENGLISH_TITLE_MISMATCH",
+        "REPORT_1_TRACKING_LINK_FORBIDDEN",
+        "REPORT_1_TOC_SOURCE_TEXT_MISMATCH"
+      ],
+      "expected_status": "FAIL"
+    },
+    {
+      "id": "ACTUAL-HOLD-KMG-DUPLICATE-HISTORY",
+      "customer": {
+        "institution": "한국탄소산업진흥원",
+        "name": "김명곤",
+        "email": "mgkim@kcarbon.or.kr"
+      },
+      "source_turn": "d1d300ec-0514-496d-933d-a1b6e4df71ce",
+      "actual_output_excerpt": "과거 발송자료 전체를 확인할 수 없어 동일 제목·개정판·유사 주제 중복검사가 완료되지 않음.",
+      "user_correction": [
+        "과거 발송자료 전체 중복검사 후 새 3종 선정",
+        "증거가 없으면 중복 없음으로 처리하지 않음"
+      ],
+      "expected_holds": [
+        "PRIOR_SEND_HISTORY_UNVERIFIED"
+      ],
+      "expected_status": "HOLD"
+    }
+  ]
+}

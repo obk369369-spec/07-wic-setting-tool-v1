@@ -1,7 +1,7 @@
 # 42번 고객 안내 — 증분 검증 체크포인트
 
 - 작업명: 42번 고객 안내
-- 상태: 실제 실행 완료
+- 상태: HOLD
 - Source of Truth: `docs/UNIFIED_CUSTOMER_GUIDANCE_RULES.md`
 - 기존 정상 검증 기준점: `da648fb86a9fc64f1a172ed22c6394416585f900`
 - 사용자 지정 최신 비교 기준: `5438b8c2f8c629b8c9784310b4f6ddcfa21d91b2`
@@ -112,3 +112,47 @@
 ### 상태
 - 42번 실제 출력 게이트 구현·테스트·GitHub 반영·read-back: 실제 실행 완료.
 - 기존 고객 운영의 미발송/추가확인 항목: 기존 RUNNING 상태 보존.
+
+## 2026-08-19 최신 사용자 피드백 항목별 대조 원장
+
+판정 기준:
+- `코드 반영`: 실행 게이트가 해당 실패를 차단하는지.
+- `독립 fixture`: 해당 오류 하나를 실제 고객 출력 형식에서 변형해 기대 FAIL/HOLD가 나오는지.
+- `실제 고객 출력`: 검증된 실제 고객 이메일과 발행사 공개 전체목차 expected를 사용한 저장 출력 재검증 증거가 있는지.
+
+| ID | 오늘 지적 오류·수정요구 | GitHub 반영 | 독립 fixture 증거 | 실제 고객 출력 증거 | 판정 |
+|---|---|---|---|---|---|
+| T42-01 | 작업 시작 전 중앙마스터·체크포인트 read-back | 반영 | `WORK_START_READBACK_EVIDENCE_MISSING` | 없음 | HOLD |
+| T42-02 | 출력 직전 중앙마스터·체크포인트 재조회 | 반영 | `PRE_OUTPUT_READBACK_EVIDENCE_MISSING` | 없음 | HOLD |
+| T42-03 | 첫 줄 메일 제목 | 반영 | `MAIL_SUBJECT_MISSING_OR_MISMATCH` | 없음 | HOLD |
+| T42-04 | 둘째 줄 검증 이메일 | 반영 | `EMAIL_MISSING_OR_MISMATCH` | 없음 | HOLD |
+| T42-05 | 추천자료 1→2→3 순서 | 반영 | `REPORT_BLOCK_ORDER_INVALID` | 없음 | HOLD |
+| T42-06 | 영문→한글→도서정보→링크→목차 순서 | 반영 | `REPORT_1_FIELD_ORDER_INVALID` | 없음 | HOLD |
+| T42-07 | 보고서별 영문 제목 | 반영 | `REPORT_1_ENGLISH_TITLE_MISSING/MISMATCH` 검사 구현 | 없음 | HOLD |
+| T42-08 | 보고서별 한글 제목 | 반영 | `REPORT_1_KOREAN_TITLE_MISSING` | 없음 | HOLD |
+| T42-09 | 비공식 번역의 참고 번역 표시 | 반영 | `REPORT_1_KOREAN_TITLE_OR_LABEL_MISMATCH` | 없음 | HOLD |
+| T42-10 | 도서정보 전체 형식 | 반영 | `REPORT_1_BOOK_INFO_MISSING` | 없음 | HOLD |
+| T42-11 | 순수 발행사 상세페이지 링크 | 반영 | `REPORT_1_DETAIL_LINK_MISSING`, `TRACKING_LINK_FORBIDDEN` | 없음 | HOLD |
+| T42-12 | 공개 하위목차 전체 출력 | 반영 | `REPORT_1_TOC_INCOMPLETE` | 없음 | HOLD |
+| T42-13 | 목차 번호 보존 | 반영 | `REPORT_1_TOC_NUMBER_MISMATCH` | 없음 | HOLD |
+| T42-14 | 목차 계층·순서 보존 | 반영 | `REPORT_1_TOC_HIERARCHY_ORDER_MISMATCH` | 없음 | HOLD |
+| T42-15 | 목차 들여쓰기 보존 | 반영 | `REPORT_1_TOC_INDENTATION_MISMATCH` | 없음 | HOLD |
+| T42-16 | 공개목차 부족 시 임의 생성 금지·HOLD | 반영 | `REPORT_1_PUBLIC_TOC_EXPECTED_MISSING` → HOLD | 없음 | HOLD |
+| T42-17 | 규칙 미준수 결과의 PASS 차단 | 반영 | `INVALID_PASS_CLAIM` | 없음 | HOLD |
+| T42-18 | 모든 조건 충족 출력만 PASS | 반영 | `VALID_CUSTOMER_OUTPUT` → PASS/오류 0 | 실제 자료 아님 | HOLD |
+
+### 실행 증거
+- 게이트 보강 Commit: `e3030ae192972cd0d5a09ee0ef0dc90a7c063e9b`.
+- 게이트 blob: `d373e61709b3dcfe442e99fdf01aff971d760f9a`.
+- GitHub read-back blob 자체 `node --self-test`: 종료코드 0.
+- 항목별 결과: FAIL 기대 16개 모두 FAIL, HOLD 기대 1개 HOLD, 정상 기대 1개 PASS.
+- 미반영 코드 항목: 0.
+- 독립 fixture 미검증 항목: 0.
+- 실제 고객 출력 재검증 미완료 항목: 18.
+- 전체 판정: HOLD.
+
+### HOLD 해제 조건
+1. 오늘 실패했던 실제 고객 출력 원문 또는 동일 고객의 재생성 출력 파일 확보.
+2. 검증된 실제 이메일과 각 발행사 상세페이지의 공개 전체목차로 expected JSON 작성.
+3. 게이트 실행 결과 PASS·오류 0·종료코드 0 확보.
+4. 실제 출력과 expected 및 실행 결과를 GitHub에 증거로 남기고 read-back.

@@ -1,7 +1,7 @@
 # 42번 고객 안내 — 증분 검증 체크포인트
 
 - 작업명: 42번 고객 안내
-- 상태: HOLD
+- 상태: PASS (실제 사례 1건 제한 검증)
 - Source of Truth: `docs/UNIFIED_CUSTOMER_GUIDANCE_RULES.md`
 - 기존 정상 검증 기준점: `da648fb86a9fc64f1a172ed22c6394416585f900`
 - 사용자 지정 최신 비교 기준: `5438b8c2f8c629b8c9784310b4f6ddcfa21d91b2`
@@ -218,9 +218,50 @@
 ### 최종 판정
 - DATA RECOVERY: HOLD.
 - 실제 고객 출력 검증: HOLD.
-- FAIL→PASS 개선: HOLD.
-- 기존 PASS 무회귀: HOLD.
-- 브랜치 테스트·push·remote read-back: 완료.
+
+## 실제 사례 1건 제한 최종 검증 — 2026-08-19
+
+- 최신 사용자 범위: 추가 기능·추가 사례·전수 재분석 없이 김명곤 고객 1건만 검증.
+- 기본 운영 흐름: `41 → 42 → 실제 고객 연락 → 연락 결과 42 반영`; 7번 필수 경유 아님.
+- 41 고객정보: 한국탄소산업진흥원 산업정책실 김명곤 책임, `mgkim@kcarbon.or.kr`.
+- 42 컨택 판단: CONTACT. 탄소복합재 점프업 파트너십 및 정책금융·기업지원 업무와 신규 자료가 직접 관련됨.
+- 과거 발송이력 확인·중복 제거: CF & CFRP, Carbon Fiber Prepreg, Carbon Felt and Graphite Felt, 일반 Carbon Composites 계열을 제외.
+- 신규 3종: BCC Publishing / Technavio / Stratistics MRC의 서로 다른 발행사 상세페이지 사용.
+- 제외 후보: 공개 실제 TOC를 처음부터 끝까지 확인할 수 없는 Grand View Research·IMARC 후보는 채택하지 않음.
+- 실제 출력 fixture: `fixtures/customer_guidance_actual_kmg_output.txt`.
+- expected: `fixtures/customer_guidance_actual_kmg_expected.json`.
+- fixture Commit: `59ce24ead02ff5f81c2193fe85d948f1993a5aff`.
+
+### 항목별 실행 증거
+
+| 검사항목 | 판정 |
+|---|---|
+| 메일 제목·검증 이메일 | PASS |
+| 41 고객정보와 42 컨택 판단 | PASS |
+| 과거 발송이력 확인·중복 제거 | PASS |
+| 신규 자료 정확히 3종·순서 1→2→3 | PASS |
+| 영문 원문 제목·한글 참고 번역 | PASS |
+| 도서정보·발행사 공식 HTML 상세페이지 | PASS |
+| 영문 TOC 상위+직접 하위 2단계 | PASS |
+| 공개 TOC 처음부터 마지막까지 expected 일치 | PASS |
+| 목차 번호·계층·들여쓰기 | PASS |
+| 수치 포함 보고서 정보 한글 번역 | PASS |
+| 동일 입력 2회 반복 판정 | PASS / PASS |
+| 게이트 오류·HOLD | 0 / 0 |
+| 기존 합성 게이트 자기검사 10건 | PASS |
+
+### 최종 범위 판정
+
+- 실제 실패사례 회수: 김명곤 1건 SKIP-REUSE.
+- 실제 고객 출력 검증: PASS.
+- DATA RECOVERY: PASS (이번 사용자 지정 1건 제한 범위).
+- 추가 고객 안내서 생성: 0건.
+- 다른 도구 수정: 0건.
+- main 병합: 최종 브랜치 재검증 후 수행 대기.
+- FAIL→PASS 개선: PASS (김명곤 실제 실패사례 교정 출력).
+- 기존 게이트 무회귀: PASS (자기검사 10건 expected 일치).
+- 브랜치 테스트: 완료.
+- push·remote read-back: 체크포인트 Commit 후 수행.
 - Draft PR: 미생성.
-- main Merge: 미실행.
-- 전체 FINAL PASS: 금지.
+- main Merge: 최종 브랜치 검증 후 수행 대기.
+- 전체 FINAL PASS: 이번 사용자 지정 실제 사례 1건 제한 범위에서 PASS.

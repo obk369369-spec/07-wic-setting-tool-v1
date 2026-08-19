@@ -8,6 +8,7 @@ function validateCustomerGuidanceOutput(output, expected) {
   if(!shaOk(ev.work_start_rules_sha)||!shaOk(ev.work_start_checkpoint_sha)) errors.push("WORK_START_READBACK_EVIDENCE_MISSING");
   if(!shaOk(ev.pre_output_rules_sha)||!shaOk(ev.pre_output_checkpoint_sha)) errors.push("PRE_OUTPUT_READBACK_EVIDENCE_MISSING");
   if(expected.prior_send_history_verified!==true) holds.push("PRIOR_SEND_HISTORY_UNVERIFIED");
+  if(expected.mode==="preflight") return {status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:[...new Set(errors)],holds:[...new Set(holds)]};
 
   const subject="메일 제목: [해외시장자료 안내] "+expected.institution+" "+expected.name+"님";
   const email="이메일 주소: "+expected.email;

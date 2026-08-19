@@ -78,6 +78,15 @@
 - 이미 검증된 내용을 다시 처음부터 조사하지 않고 최신 변경분만 증분 반영한다.
 - 고객 1명 검증 완료 후 그 고객 안내서 데이터를 즉시 출력하고 다음 고객로 넘어간다.
 
+## 실제 출력 검증 게이트
+- 실행 파일: `scripts/customer_guidance_output_gate.js`
+- 실행: `node scripts/customer_guidance_output_gate.js <고객출력.txt> <expected.json>`
+- 자체 검증: `node scripts/customer_guidance_output_gate.js --self-test`
+- expected JSON은 검증된 기관·이름·이메일과 보고서별 공개 목차 전체 줄을 담는다.
+- 메일 제목, 이메일, 한글 제목, 공개 하위목차 전체, 번호·계층·들여쓰기 중 하나라도 다르거나 누락되면 종료코드 1과 `FAIL`을 반환한다.
+- 오류가 있는 출력에 `PASS`가 적혀 있으면 `INVALID_PASS_CLAIM`으로 추가 차단한다.
+- 게이트 종료코드 0과 `PASS` 없이는 고객별 안내서를 완료 처리하지 않는다.
+
 ## 현재 상태
 - 42번 GitHub 규칙·데이터·체크포인트 통합 감사: 완료/PASS.
 - 한국탄소산업진흥원 실제 고객 안내서 운영: 진행 중.

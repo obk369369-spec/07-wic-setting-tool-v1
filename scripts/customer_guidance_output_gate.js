@@ -22,8 +22,8 @@ function validateCustomerGuidanceOutput(output, expected) {
   const sent=new Set((expected.prior_sent_titles||[]).map(x=>String(x).trim().toLowerCase()));
 
   for(let i=0;i<reports.length;i++){
-    const n=i+1,start=starts[i],next=i<2?starts[i+1]:lines.length;
-    if(start<0||next<0) continue;
+    const n=i+1,start=starts[i],next=i<2&&starts[i+1]>=0?starts[i+1]:lines.length;
+    if(start<0) continue;
     const block=lines.slice(start,next), find=rx=>block.findIndex(x=>rx.test(x.trim()));
     const e=find(/^영문 제목:\s*\S/),k=find(/^한글 제목(?:\(참고 번역\))?:\s*\S/),p=find(/^◇ 발행사:\s*\S/),d=find(/^◇ 발행일:\s*\S/),u=find(/^자세한 내용의 링크:\s*https?:\/\//),t=find(/^목차:$/),info=find(/^보고서 정보:\s*\S/);
     if(e<0) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISSING");

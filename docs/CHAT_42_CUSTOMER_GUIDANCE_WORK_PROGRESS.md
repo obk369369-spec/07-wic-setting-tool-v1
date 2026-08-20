@@ -114,3 +114,12 @@
 - 다음 작업: 추가 고객 안내서 생성 없음. 현재 브랜치 최종 검증 및 main 병합.
 
 상태: PASS (실제 사례 1건 제한 검증)
+
+## 2026-08-20 사용자 피드백 즉시반영 구조
+
+- 분류: 42번 운영 절차 + 실제 실행 오류 재발방지 피드백.
+- 중앙마스터: `docs/UNIFIED_CUSTOMER_GUIDANCE_RULES.md` §31에 새 대화 선조회, 도구 분리, DIFF ONLY, gate/checkpoint/commit/push/read-back/SHA 순서를 반영.
+- 실행 게이트: 피드백이 연관된 expected에 `feedback_evidence`가 있으면 분류, 중앙마스터·체크포인트 Commit SHA, 원격 read-back 일치를 강제하며 누락 시 FAIL.
+- 대표 실제 사례: 기존 김명곤 actual/expected 1건을 SKIP-REUSE하고, 새 피드백 증거 필드만 연결해 재검증한다.
+- 다른 도구·고객·과거 규칙: 조사·수정하지 않음.
+- 현재 상태: HOLD — commit/push, 원격 동일 파일 read-back, Commit SHA 확인 전.

@@ -7,6 +7,12 @@ function validateCustomerGuidanceOutput(output, expected) {
   const ev=expected.evidence||{}, shaOk=v=>/^[0-9a-f]{40}$/i.test(String(v||""));
   if(!shaOk(ev.work_start_rules_sha)||!shaOk(ev.work_start_checkpoint_sha)) errors.push("WORK_START_READBACK_EVIDENCE_MISSING");
   if(!shaOk(ev.pre_output_rules_sha)||!shaOk(ev.pre_output_checkpoint_sha)) errors.push("PRE_OUTPUT_READBACK_EVIDENCE_MISSING");
+  if(expected.feedback_evidence){
+    const f=expected.feedback_evidence;
+    if(!["wording","execution_error","rule_addition"].includes(f.classification)) errors.push("FEEDBACK_CLASSIFICATION_INVALID");
+    if(!shaOk(f.master_commit_sha)||!shaOk(f.checkpoint_commit_sha)) errors.push("FEEDBACK_COMMIT_EVIDENCE_MISSING");
+    if(f.remote_readback_match!==true) errors.push("FEEDBACK_REMOTE_READBACK_MISSING");
+  }
   if(expected.prior_send_history_verified!==true) holds.push("PRIOR_SEND_HISTORY_UNVERIFIED");
   if(expected.mode==="preflight") return {status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:[...new Set(errors)],holds:[...new Set(holds)]};
 
@@ -92,7 +98,7 @@ function buildFixture(){
 }
 
 function runSelfTest(){
- const b=buildFixture(),cases=[],add=(id,o,e,status,code)=>{const r=validateCustomerGuidanceOutput(o,e);if(r.status!==status||code&&!r.errors.concat(r.holds).includes(code))throw new Error(id+JSON.stringify(r));cases.push({id,status,evidence:code||"errors=0"});};
+ const b=buildFixture(),s="a".repeat(40),cases=[],add=(id,o,e,status,code)=>{const r=validateCustomerGuidanceOutput(o,e);if(r.status!==status||code&&!r.errors.concat(r.holds).includes(code))throw new Error(id+JSON.stringify(r));cases.push({id,status,evidence:code||"errors=0"});};
  add("VALID",b.good,b.expected,"PASS",null);
  add("SMALL_EN_TITLE",b.good.replace("## 영문 제목: Carbon A","영문 제목: Carbon A"),b.expected,"FAIL","REPORT_1_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
  add("SMALL_KO_TITLE",b.good.replace("## 한글 제목(참고 번역): 탄소 A","한글 제목(참고 번역): 탄소 A"),b.expected,"FAIL","REPORT_1_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
@@ -106,6 +112,8 @@ function runSelfTest(){
  add("PDF_LINK",b.good.replace("https://publisher.example/a","https://publisher.example/a/brochure.pdf"),b.expected,"FAIL","REPORT_1_BROCHURE_OR_FILE_LINK_FORBIDDEN");
  const dup=JSON.parse(JSON.stringify(b.expected));dup.prior_sent_titles=["Carbon A"];add("PRIOR_DUPLICATE",b.good,dup,"FAIL","REPORT_1_PRIOR_SENT_DUPLICATE");
  const hist=JSON.parse(JSON.stringify(b.expected));hist.prior_send_history_verified=false;add("HISTORY_HOLD",b.good,hist,"HOLD","PRIOR_SEND_HISTORY_UNVERIFIED");
+ const feedback=JSON.parse(JSON.stringify(b.expected));feedback.feedback_evidence={classification:"execution_error",master_commit_sha:s,checkpoint_commit_sha:s,remote_readback_match:true};add("FEEDBACK_EVIDENCE_VALID",b.good,feedback,"PASS",null);
+ const feedbackMissing=JSON.parse(JSON.stringify(feedback));feedbackMissing.feedback_evidence.remote_readback_match=false;add("FEEDBACK_READBACK_MISSING",b.good,feedbackMissing,"FAIL","FEEDBACK_REMOTE_READBACK_MISSING");
  const deterministic=JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected))===JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected));if(!deterministic)throw new Error("NON_DETERMINISTIC");cases.push({id:"DETERMINISTIC_REPEAT",status:"PASS",evidence:"same input same result"});
  return {cases,summary:{total:cases.length}};
 }

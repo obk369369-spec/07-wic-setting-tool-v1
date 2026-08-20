@@ -3,10 +3,10 @@
 고객정보: 한국탄소산업진흥원 산업정책실 김명곤 책임 / 탄소복합재 점프업 파트너십, 정책금융·기업지원
 컨택 판단: CONTACT / 과거 실제 발송 4종 확인 및 동일 제목·개정판·유사 반복 제거 완료
 추천자료 1
-영문 제목: Global Markets for Advanced Aerospace Materials
-한글 제목(참고 번역): 첨단 항공우주 소재 세계시장
-◇ 발행사: BCC Publishing (183 Pages, Report Code AVM192D)
-◇ 발행일: 2026-04 -PDF-
+## 영문 제목: Global Markets for Advanced Aerospace Materials
+## 한글 제목(참고 번역): 첨단 항공우주 소재 세계시장
+◇ 발행사: BCC Publishing (183 Pages)        ◇ 정가: 확인 필요
+◇ 발행일: 2026-04 -PDF-        ◆ 공급가격: 확인 필요
 자세한 내용의 링크: https://www.bccresearch.com/market-research/advanced-materials/emerging-materials-aerospace-market-report.html?ro=yes
 목차:
 Chapter- 1: Executive Summary
@@ -48,10 +48,10 @@ Chapter- 7: Appendix
   Company Profiles
 보고서 정보: 2025년 326억 달러에서 2031년 512억 달러로 성장하며, 2026~2031년 CAGR은 8.5%입니다.
 추천자료 2
-영문 제목: Fiber Reinforced Plastic (FRP) Recycling Market Size 2026-2030
-한글 제목(참고 번역): 섬유강화플라스틱(FRP) 재활용 시장 규모 2026-2030
-◇ 발행사: Technavio (283 Pages)
-◇ 발행일: 2026 -PDF-
+## 영문 제목: Fiber Reinforced Plastic (FRP) Recycling Market Size 2026-2030
+## 한글 제목(참고 번역): 섬유강화플라스틱(FRP) 재활용 시장 규모 2026-2030
+◇ 발행사: Technavio (283 Pages)        ◇ 정가: 확인 필요
+◇ 발행일: 2026 -PDF-        ◆ 공급가격: 확인 필요
 자세한 내용의 링크: https://www.technavio.com/report/fiber-reinforced-pastic-frp-recycling-market-industry-analysis
 목차:
 1. Executive Summary
@@ -162,10 +162,10 @@ Chapter- 7: Appendix
   16.10 List of abbreviations
 보고서 정보: 2026~2030년 시장 증가분은 4,430만 달러이며, 2025~2030년 CAGR은 3.5%입니다.
 추천자료 3
-영문 제목: Carbon Fiber Recycling Market Forecasts to 2034 - Global Analysis By Type (Milled Carbon Fiber and Chopped Carbon Fiber), Source, Recycling Process, End User and By Geography
-한글 제목(참고 번역): 2034년까지 탄소섬유 재활용 시장 전망: 유형, 원료, 재활용 공정, 최종사용자 및 지역별 세계 분석
-◇ 발행사: Stratistics MRC (Report ID SMRC34828)
-◇ 발행일: 2026 -PDF-
+## 영문 제목: Carbon Fiber Recycling Market Forecasts to 2034 - Global Analysis By Type (Milled Carbon Fiber and Chopped Carbon Fiber), Source, Recycling Process, End User and By Geography
+## 한글 제목(참고 번역): 2034년까지 탄소섬유 재활용 시장 전망: 유형, 원료, 재활용 공정, 최종사용자 및 지역별 세계 분석
+◇ 발행사: Stratistics MRC (Pages)        ◇ 정가: 확인 필요
+◇ 발행일: 2026 -PDF-        ◆ 공급가격: 확인 필요
 자세한 내용의 링크: https://www.strategymrc.com/report/carbon-fiber-recycling-market
 목차:
 1 Executive Summary
@@ -245,5 +245,3 @@ Chapter- 7: Appendix
   12.17 Sigmatex
   12.18 CATACK-H
 보고서 정보: 2026년 1억 6,290만 달러에서 2034년 4억 7,550만 달러로 성장하며 CAGR은 14.3%입니다.
-
-

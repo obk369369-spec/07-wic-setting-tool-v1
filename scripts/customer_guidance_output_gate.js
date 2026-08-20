@@ -25,22 +25,26 @@ function validateCustomerGuidanceOutput(output, expected) {
     const n=i+1,start=starts[i],next=i<2&&starts[i+1]>=0?starts[i+1]:lines.length;
     if(start<0) continue;
     const block=lines.slice(start,next), find=rx=>block.findIndex(x=>rx.test(x.trim()));
-    const e=find(/^영문 제목:\s*\S/),k=find(/^한글 제목(?:\(참고 번역\))?:\s*\S/),p=find(/^◇ 발행사:\s*\S/),d=find(/^◇ 발행일:\s*\S/),u=find(/^자세한 내용의 링크:\s*https?:\/\//),t=find(/^목차:$/),info=find(/^보고서 정보:\s*\S/);
-    if(e<0) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISSING");
-    if(k<0) errors.push("REPORT_"+n+"_KOREAN_TITLE_MISSING");
-    if(p<0||d<0) errors.push("REPORT_"+n+"_BOOK_INFO_MISSING");
+    const e=find(/^##\s+영문 제목:\s*\S/),k=find(/^##\s+한글 제목(?:\(참고 번역\))?:\s*\S/);
+    const p=find(/^◇ 발행사:\s*\S.*\(\s*[^)]*Pages\s*\).*◇ 정가:\s*(?:[$€₤¥]|확인 필요)/);
+    const d=find(/^◇ 발행일:\s*\S.*-PDF-.*◆ 공급가격:\s*(?:[\d,]+\s*원|확인 필요)/);
+    const u=find(/^자세한 내용의 링크:\s*https?:\/\//),t=find(/^목차:$/),info=find(/^보고서 정보:\s*\S/);
+    if(e<0) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
+    if(k<0) errors.push("REPORT_"+n+"_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
+    if(p<0) errors.push("REPORT_"+n+"_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
+    if(d<0) errors.push("REPORT_"+n+"_PUBLISHED_SUPPLY_LINE_FORMAT_INVALID");
     if(u<0) errors.push("REPORT_"+n+"_DETAIL_LINK_MISSING");
     if(info<0) errors.push("REPORT_"+n+"_REPORT_INFO_MISSING");
     const ordered=[e,k,p,d,u,t,info];
     if(ordered.some(x=>x<0)||ordered.some((x,j)=>j&&x<=ordered[j-1])) errors.push("REPORT_"+n+"_FIELD_ORDER_INVALID");
     const r=reports[i]||{};
     if(e>=0){
-      const actual=block[e].trim().replace(/^영문 제목:\s*/,"");
+      const actual=block[e].trim().replace(/^##\s+영문 제목:\s*/,"");
       if(r.english_title&&actual!==r.english_title) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISMATCH");
       if(sent.has(actual.toLowerCase())) errors.push("REPORT_"+n+"_PRIOR_SENT_DUPLICATE");
     }
     if(k>=0){
-      const prefix=r.korean_title_type==="reference"?"한글 제목(참고 번역): ":"한글 제목: ";
+      const prefix=r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ";
       if(!r.korean_title||block[k].trim()!==prefix+r.korean_title) errors.push("REPORT_"+n+"_KOREAN_TITLE_OR_LABEL_MISMATCH");
     }
     if(u>=0){
@@ -56,6 +60,7 @@ function validateCustomerGuidanceOutput(output, expected) {
     const tocEnd=info>t?info:block.length;
     const actualToc=block.slice(t+1,tocEnd).filter(x=>x.trim()).map(x=>x.replace(/\s+$/,""));
     if(actualToc.length!==expectedToc.length) errors.push("REPORT_"+n+"_TOC_INCOMPLETE");
+    if(actualToc.length&&expectedToc.length&&actualToc[actualToc.length-1].trim()!==expectedToc[expectedToc.length-1].trim()) errors.push("REPORT_"+n+"_TOC_LAST_ITEM_MISSING_OR_MISMATCH");
     const num=line=>(line.trim().match(/^(\d+(?:\.\d+)*\.?|Chapter-\s*\d+)/i)||[,""])[1];
     const depth=line=>{const m=num(line).match(/\d+(?:\.\d+)*/);return m?m[0].split(".").length:((line.match(/^\s*/)||[""])[0].length?2:1);};
     if(actualToc.some(x=>depth(x)>2)) errors.push("REPORT_"+n+"_TOC_DEPTH_EXCEEDED");
@@ -82,13 +87,17 @@ function buildFixture(){
  {english_title:"Carbon A",korean_title:"탄소 A",korean_title_type:"reference",url:"https://publisher.example/a",toc_lines:["1. Market Overview","  1.1 Market Definition"]},
  {english_title:"Carbon B",korean_title:"탄소 B",korean_title_type:"official",url:"https://publisher.example/b",toc_lines:["1. Executive Summary","  1.1 Key Findings"]},
  {english_title:"Carbon C",korean_title:"탄소 C",korean_title_type:"official",url:"https://publisher.example/c",toc_lines:["1. Introduction","  1.1 Objectives"]}]};
- const rep=(n,r)=>["추천자료 "+n,"영문 제목: "+r.english_title,(r.korean_title_type==="reference"?"한글 제목(참고 번역): ":"한글 제목: ")+r.korean_title,"◇ 발행사: Publisher (100 Pages)","◇ 발행일: 2026-08-19 -PDF-","자세한 내용의 링크: "+r.url,"목차:",...r.toc_lines,"보고서 정보: 2026년 시장규모 100"].join("\n");
+ const rep=(n,r)=>["추천자료 "+n,"## 영문 제목: "+r.english_title,(r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ")+r.korean_title,"◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행일: 2026년 08월 -PDF-        ◆ 공급가격: 7,425,000원","자세한 내용의 링크: "+r.url,"목차:",...r.toc_lines,"보고서 정보: 2026년 시장규모 100"].join("\n");
  return {expected:e,good:["메일 제목: [해외시장자료 안내] 한국탄소산업진흥원 김명곤님","이메일 주소: mgkim@kcarbon.or.kr",...e.reports.map((r,i)=>rep(i+1,r))].join("\n")};
 }
 
 function runSelfTest(){
  const b=buildFixture(),cases=[],add=(id,o,e,status,code)=>{const r=validateCustomerGuidanceOutput(o,e);if(r.status!==status||code&&!r.errors.concat(r.holds).includes(code))throw new Error(id+JSON.stringify(r));cases.push({id,status,evidence:code||"errors=0"});};
  add("VALID",b.good,b.expected,"PASS",null);
+ add("SMALL_EN_TITLE",b.good.replace("## 영문 제목: Carbon A","영문 제목: Carbon A"),b.expected,"FAIL","REPORT_1_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
+ add("SMALL_KO_TITLE",b.good.replace("## 한글 제목(참고 번역): 탄소 A","한글 제목(참고 번역): 탄소 A"),b.expected,"FAIL","REPORT_1_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
+ add("NO_DETAIL_LINK",b.good.replace(/^자세한 내용의 링크:[^\n]+\n/m,""),b.expected,"FAIL","REPORT_1_DETAIL_LINK_MISSING");
+ add("BAD_BOOK_LINE",b.good.replace("◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행사: Publisher"),b.expected,"FAIL","REPORT_1_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
  add("TOC_DEPTH",b.good.replace("  1.1 Market Definition","    1.1.1 Market Definition"),b.expected,"FAIL","REPORT_1_TOC_DEPTH_EXCEEDED");
  add("TOC_TRUNCATED",b.good.replace("\n  1.1 Market Definition",""),b.expected,"FAIL","REPORT_1_TOC_INCOMPLETE");
  add("TOC_TRANSLATED",b.good.replace("1. Market Overview","1. 시장 개요"),b.expected,"FAIL","REPORT_1_TOC_SOURCE_TEXT_MISMATCH");

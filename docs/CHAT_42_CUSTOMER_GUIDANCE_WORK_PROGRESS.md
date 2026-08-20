@@ -122,4 +122,6 @@
 - 실행 게이트: 피드백이 연관된 expected에 `feedback_evidence`가 있으면 분류, 중앙마스터·체크포인트 Commit SHA, 원격 read-back 일치를 강제하며 누락 시 FAIL.
 - 대표 실제 사례: 기존 김명곤 actual/expected 1건을 SKIP-REUSE하고, 새 피드백 증거 필드만 연결해 재검증한다.
 - 다른 도구·고객·과거 규칙: 조사·수정하지 않음.
-- 현재 상태: HOLD — commit/push, 원격 동일 파일 read-back, Commit SHA 확인 전.
+- 검증 결과: 원격 main `6be4beb6f0b072c5e7a4b6eb7154c6628ecaca58` 일치. 중앙마스터·체크포인트·게이트·actual/expected 5개 blob read-back 모두 일치.
+- 게이트 결과: 자체검사 16건 expected 일치, 김명곤 actual/expected 대표 실제 사례 1건 `PASS`, 오류/HOLD 0.
+- 현재 상태: PASS — 42번 대표 실제 사례 1건 제한 범위.

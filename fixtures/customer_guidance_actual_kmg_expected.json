@@ -15,6 +15,12 @@
     "pre_output_rules_sha": "0097f620d2a6ab36672a47523ba38f2f4886bf0f",
     "pre_output_checkpoint_sha": "495fb9960be5c4b71f98adc4c88413a77fdb0477"
   },
+  "feedback_evidence": {
+    "classification": "execution_error",
+    "master_commit_sha": "c525bf96c912bd382ca38a54d1128b9d441b616c",
+    "checkpoint_commit_sha": "c525bf96c912bd382ca38a54d1128b9d441b616c",
+    "remote_readback_match": true
+  },
   "contact_judgment": {
     "result": "CONTACT",
     "reason": "탄소복합재 정책금융·기업지원 담당의 실제 업무와 신규 항공우주 소재·복합재 재활용 자료가 직접 관련됨",
@@ -267,5 +273,4 @@
     }
   ]
 }
-
 

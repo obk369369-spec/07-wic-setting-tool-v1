@@ -33,7 +33,7 @@ function validateCustomerGuidanceOutput(output, expected) {
     const block=lines.slice(start,next), find=rx=>block.findIndex(x=>rx.test(x.trim()));
     const e=find(/^##\s+영문 제목:\s*\S/),k=find(/^##\s+한글 제목(?:\(참고 번역\))?:\s*\S/);
     const p=find(/^◇ 발행사:\s*\S.*\(\s*[^)]*Pages\s*\).*◇ 정가:\s*(?:[$€₤¥]|확인 필요)/);
-    const d=find(/^◇ 발행일:\s*\S.*-PDF-.*◆ 공급가격:\s*(?:[\d,]+\s*원|확인 필요)/);
+    const d=find(/^◇ 발행일:\s*\S.*-PDF-.*◆ 공급가격:\s*(?:[\d,]+\s*원|확인 필요|\s*$)/);
     const u=find(/^자세한 내용의 링크:\s*https?:\/\//),t=find(/^목차:$/),info=find(/^보고서 정보:\s*\S/);
     if(e<0) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
     if(k<0) errors.push("REPORT_"+n+"_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
@@ -53,13 +53,26 @@ function validateCustomerGuidanceOutput(output, expected) {
       const prefix=r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ";
       if(!r.korean_title||block[k].trim()!==prefix+r.korean_title) errors.push("REPORT_"+n+"_KOREAN_TITLE_OR_LABEL_MISMATCH");
     }
+    if(p>=0){
+      const line=block[p].trim();
+      if(r.publisher&&!line.startsWith("◇ 발행사: "+r.publisher+" ")) errors.push("REPORT_"+n+"_PUBLISHER_MISMATCH");
+      if(r.pages&&!line.includes("( "+r.pages+" Pages )")&&!line.includes("("+r.pages+" Pages)")) errors.push("REPORT_"+n+"_PAGES_MISMATCH");
+      if(r.price_display&&!line.includes("◇ 정가: "+r.price_display)) errors.push("REPORT_"+n+"_PRICE_MISMATCH");
+    }
+    if(d>=0){
+      const line=block[d].trim();
+      if(r.publication_date_display&&!line.includes("◇ 발행일: "+r.publication_date_display)) errors.push("REPORT_"+n+"_PUBLICATION_DATE_MISMATCH");
+    }
     if(u>=0){
       const url=block[u].trim().replace(/^자세한 내용의 링크:\s*/,"");
       if(r.url&&url!==r.url) errors.push("REPORT_"+n+"_DETAIL_LINK_MISMATCH");
       if(/[?&](?:utm_[^=]+|fbclid|gclid|mc_cid|mc_eid|_ga|_gl)=|chatgpt\.com/i.test(url)) errors.push("REPORT_"+n+"_TRACKING_LINK_FORBIDDEN");
       if(/\.pdf(?:$|[?#])|brochure|\/file\//i.test(url)) errors.push("REPORT_"+n+"_BROCHURE_OR_FILE_LINK_FORBIDDEN");
     }
-    if(info>=0&&!/\d/.test(block[info])) errors.push("REPORT_"+n+"_REPORT_INFO_NUMERIC_SOURCE_MISSING");
+    if(info>=0){
+      if(!/\d/.test(block[info])) errors.push("REPORT_"+n+"_REPORT_INFO_NUMERIC_SOURCE_MISSING");
+      if(r.report_info_ko_exact&&block[info].trim()!=="보고서 정보: "+r.report_info_ko_exact) errors.push("REPORT_"+n+"_REPORT_INFO_TRANSLATION_MISMATCH");
+    }
     const expectedToc=(r.toc_lines||[]).map(x=>String(x).replace(/\s+$/,""));
     if(!expectedToc.length){holds.push("REPORT_"+n+"_PUBLIC_TOC_EXPECTED_MISSING");continue;}
     if(t<0){errors.push("REPORT_"+n+"_TOC_MISSING");continue;}
@@ -88,35 +101,61 @@ function validateCustomerGuidanceOutput(output, expected) {
   return {status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:[...new Set(errors)],holds:[...new Set(holds)]};
 }
 
+function emitValidatedOutput(output, expected){
+  const result=validateCustomerGuidanceOutput(output,expected);
+  if(result.status!=="PASS"){
+    const err=new Error("CUSTOMER_GUIDANCE_OUTPUT_BLOCKED:"+JSON.stringify(result));
+    err.validation=result;
+    throw err;
+  }
+  return String(output||"");
+}
+
 function buildFixture(){
  const s="a".repeat(40),e={institution:"한국탄소산업진흥원",name:"김명곤",email:"mgkim@kcarbon.or.kr",prior_send_history_verified:true,prior_sent_titles:[],evidence:{work_start_rules_sha:s,work_start_checkpoint_sha:s,pre_output_rules_sha:s,pre_output_checkpoint_sha:s},reports:[
- {english_title:"Carbon A",korean_title:"탄소 A",korean_title_type:"reference",url:"https://publisher.example/a",toc_lines:["1. Market Overview","  1.1 Market Definition"]},
- {english_title:"Carbon B",korean_title:"탄소 B",korean_title_type:"official",url:"https://publisher.example/b",toc_lines:["1. Executive Summary","  1.1 Key Findings"]},
- {english_title:"Carbon C",korean_title:"탄소 C",korean_title_type:"official",url:"https://publisher.example/c",toc_lines:["1. Introduction","  1.1 Objectives"]}]};
- const rep=(n,r)=>["추천자료 "+n,"## 영문 제목: "+r.english_title,(r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ")+r.korean_title,"◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행일: 2026년 08월 -PDF-        ◆ 공급가격: 7,425,000원","자세한 내용의 링크: "+r.url,"목차:",...r.toc_lines,"보고서 정보: 2026년 시장규모 100"].join("\n");
+ {english_title:"Carbon A",korean_title:"탄소 A",korean_title_type:"reference",publisher:"Publisher",pages:"100",price_display:"$ 4,950",publication_date_display:"2026년 08월",url:"https://publisher.example/a",toc_lines:["1. Market Overview","  1.1 Market Definition"],report_info_ko_exact:"2026년 시장규모 100"},
+ {english_title:"Carbon B",korean_title:"탄소 B",korean_title_type:"official",publisher:"Publisher",pages:"100",price_display:"$ 4,950",publication_date_display:"2026년 08월",url:"https://publisher.example/b",toc_lines:["1. Executive Summary","  1.1 Key Findings"],report_info_ko_exact:"2026년 시장규모 100"},
+ {english_title:"Carbon C",korean_title:"탄소 C",korean_title_type:"official",publisher:"Publisher",pages:"100",price_display:"$ 4,950",publication_date_display:"2026년 08월",url:"https://publisher.example/c",toc_lines:["1. Introduction","  1.1 Objectives"],report_info_ko_exact:"2026년 시장규모 100"}]};
+ const rep=(n,r)=>["추천자료 "+n,"## 영문 제목: "+r.english_title,(r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ")+r.korean_title,"◇ 발행사: Publisher ( 100 Pages )        ◇ 정가: $ 4,950","◇ 발행일: 2026년 08월 -PDF-        ◆ 공급가격: 7,425,000원","자세한 내용의 링크: "+r.url,"목차:",...r.toc_lines,"보고서 정보: 2026년 시장규모 100"].join("\n");
  return {expected:e,good:["메일 제목: [해외시장자료 안내] 한국탄소산업진흥원 김명곤님","이메일 주소: mgkim@kcarbon.or.kr",...e.reports.map((r,i)=>rep(i+1,r))].join("\n")};
 }
 
 function runSelfTest(){
  const b=buildFixture(),s="a".repeat(40),cases=[],add=(id,o,e,status,code)=>{const r=validateCustomerGuidanceOutput(o,e);if(r.status!==status||code&&!r.errors.concat(r.holds).includes(code))throw new Error(id+JSON.stringify(r));cases.push({id,status,evidence:code||"errors=0"});};
  add("VALID",b.good,b.expected,"PASS",null);
+ add("MISSING_REPORT_3",b.good.split("\n추천자료 3\n")[0],b.expected,"FAIL","REPORT_BLOCK_ORDER_INVALID");
+ add("BAD_PUBLISHER",b.good.replace("◇ 발행사: Publisher ( 100 Pages )","◇ 발행사: Wrong Publisher ( 100 Pages )"),b.expected,"FAIL","REPORT_1_PUBLISHER_MISMATCH");
  add("SMALL_EN_TITLE",b.good.replace("## 영문 제목: Carbon A","영문 제목: Carbon A"),b.expected,"FAIL","REPORT_1_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
  add("SMALL_KO_TITLE",b.good.replace("## 한글 제목(참고 번역): 탄소 A","한글 제목(참고 번역): 탄소 A"),b.expected,"FAIL","REPORT_1_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
  add("NO_DETAIL_LINK",b.good.replace(/^자세한 내용의 링크:[^\n]+\n/m,""),b.expected,"FAIL","REPORT_1_DETAIL_LINK_MISSING");
- add("BAD_BOOK_LINE",b.good.replace("◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행사: Publisher"),b.expected,"FAIL","REPORT_1_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
+ add("BAD_BOOK_LINE",b.good.replace("◇ 발행사: Publisher ( 100 Pages )        ◇ 정가: $ 4,950","◇ 발행사: Publisher"),b.expected,"FAIL","REPORT_1_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
  add("TOC_DEPTH",b.good.replace("  1.1 Market Definition","    1.1.1 Market Definition"),b.expected,"FAIL","REPORT_1_TOC_DEPTH_EXCEEDED");
  add("TOC_TRUNCATED",b.good.replace("\n  1.1 Market Definition",""),b.expected,"FAIL","REPORT_1_TOC_INCOMPLETE");
  add("TOC_TRANSLATED",b.good.replace("1. Market Overview","1. 시장 개요"),b.expected,"FAIL","REPORT_1_TOC_SOURCE_TEXT_MISMATCH");
  add("NO_REPORT_INFO",b.good.replace(/^보고서 정보:[^\n]+\n/m,""),b.expected,"FAIL","REPORT_1_REPORT_INFO_MISSING");
+ add("REPORT_INFO_EDITED",b.good.replace("보고서 정보: 2026년 시장규모 100","보고서 정보: 2026년 시장규모 약 100"),b.expected,"FAIL","REPORT_1_REPORT_INFO_TRANSLATION_MISMATCH");
  add("TRACKING",b.good.replace("https://publisher.example/a","https://publisher.example/a?utm_source=chatgpt.com"),b.expected,"FAIL","REPORT_1_TRACKING_LINK_FORBIDDEN");
  add("PDF_LINK",b.good.replace("https://publisher.example/a","https://publisher.example/a/brochure.pdf"),b.expected,"FAIL","REPORT_1_BROCHURE_OR_FILE_LINK_FORBIDDEN");
  const dup=JSON.parse(JSON.stringify(b.expected));dup.prior_sent_titles=["Carbon A"];add("PRIOR_DUPLICATE",b.good,dup,"FAIL","REPORT_1_PRIOR_SENT_DUPLICATE");
  const hist=JSON.parse(JSON.stringify(b.expected));hist.prior_send_history_verified=false;add("HISTORY_HOLD",b.good,hist,"HOLD","PRIOR_SEND_HISTORY_UNVERIFIED");
  const feedback=JSON.parse(JSON.stringify(b.expected));feedback.feedback_evidence={classification:"execution_error",master_commit_sha:s,checkpoint_commit_sha:s,remote_readback_match:true};add("FEEDBACK_EVIDENCE_VALID",b.good,feedback,"PASS",null);
  const feedbackMissing=JSON.parse(JSON.stringify(feedback));feedbackMissing.feedback_evidence.remote_readback_match=false;add("FEEDBACK_READBACK_MISSING",b.good,feedbackMissing,"FAIL","FEEDBACK_REMOTE_READBACK_MISSING");
+ let blocked=false;try{emitValidatedOutput(b.good.replace("추천자료 3","추천자료 X"),b.expected);}catch(e){blocked=true;}if(!blocked)throw new Error("EMIT_GUARD_DID_NOT_BLOCK");cases.push({id:"EMIT_GUARD_BLOCKS_FAIL",status:"PASS",evidence:"throw on non-PASS"});
  const deterministic=JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected))===JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected));if(!deterministic)throw new Error("NON_DETERMINISTIC");cases.push({id:"DETERMINISTIC_REPEAT",status:"PASS",evidence:"same input same result"});
  return {cases,summary:{total:cases.length}};
 }
 
-if(typeof module!=="undefined")module.exports={validateCustomerGuidanceOutput};
-if(typeof require!=="undefined"&&require.main===module){const fs=require("fs");if(process.argv.includes("--self-test")){process.stdout.write(JSON.stringify(runSelfTest(),null,2)+"\n");process.exit(0);}const o=process.argv[2],e=process.argv[3];if(!o||!e){process.stderr.write("Usage: node customer_guidance_output_gate.js <output.txt> <expected.json> | --self-test\n");process.exit(2);}const r=validateCustomerGuidanceOutput(fs.readFileSync(o,"utf8"),JSON.parse(fs.readFileSync(e,"utf8")));process.stdout.write(JSON.stringify(r,null,2)+"\n");process.exit(r.status==="PASS"?0:1);}
+if(typeof module!=="undefined")module.exports={validateCustomerGuidanceOutput,emitValidatedOutput};
+if(typeof require!=="undefined"&&require.main===module){
+ const fs=require("fs");
+ if(process.argv.includes("--self-test")){process.stdout.write(JSON.stringify(runSelfTest(),null,2)+"\n");process.exit(0);}
+ const emit=process.argv.includes("--emit-if-pass");
+ const args=process.argv.filter(x=>x!=="--emit-if-pass");
+ const o=args[2],e=args[3];
+ if(!o||!e){process.stderr.write("Usage: node customer_guidance_output_gate.js [--emit-if-pass] <output.txt> <expected.json> | --self-test\n");process.exit(2);}
+ const output=fs.readFileSync(o,"utf8"),expected=JSON.parse(fs.readFileSync(e,"utf8"));
+ const r=validateCustomerGuidanceOutput(output,expected);
+ if(emit&&r.status==="PASS") process.stdout.write(output);
+ else process.stdout.write(JSON.stringify(r,null,2)+"\n");
+ process.exit(r.status==="PASS"?0:1);
+}

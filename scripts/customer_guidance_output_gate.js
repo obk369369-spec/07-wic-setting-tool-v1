@@ -1,122 +1,109 @@
 "use strict";
+const crypto=require("crypto");
+const uniq=a=>[...new Set(a)];
+const shaOk=v=>/^[0-9a-f]{40}$/i.test(String(v||""));
+const hash=s=>crypto.createHash("sha256").update(String(s).replace(/\r\n/g,"\n"),"utf8").digest("hex");
 
-function validateCustomerGuidanceOutput(output, expected) {
-  const errors=[], holds=[];
-  const text=String(output||"").replace(/\r\n/g,"\n");
-  const lines=text.split("\n"), nonempty=lines.filter(x=>x.trim());
-  const ev=expected.evidence||{}, shaOk=v=>/^[0-9a-f]{40}$/i.test(String(v||""));
-  if(!shaOk(ev.work_start_rules_sha)||!shaOk(ev.work_start_checkpoint_sha)) errors.push("WORK_START_READBACK_EVIDENCE_MISSING");
-  if(!shaOk(ev.pre_output_rules_sha)||!shaOk(ev.pre_output_checkpoint_sha)) errors.push("PRE_OUTPUT_READBACK_EVIDENCE_MISSING");
-  if(expected.feedback_evidence){
-    const f=expected.feedback_evidence;
-    if(!["wording","execution_error","rule_addition"].includes(f.classification)) errors.push("FEEDBACK_CLASSIFICATION_INVALID");
-    if(!shaOk(f.master_commit_sha)||!shaOk(f.checkpoint_commit_sha)) errors.push("FEEDBACK_COMMIT_EVIDENCE_MISSING");
-    if(f.remote_readback_match!==true) errors.push("FEEDBACK_REMOTE_READBACK_MISSING");
+function validateCustomerGuidanceOutput(output,expected){
+ const errors=[],holds=[],checks=[];
+ const add=(id,status,detail="")=>checks.push({id,status,detail});
+ const fail=(id,detail="")=>{errors.push(id);add(id,"FAIL",detail)};
+ const hold=(id,detail="")=>{holds.push(id);add(id,"HOLD",detail)};
+ const pass=(id,detail="")=>add(id,"PASS",detail);
+ const text=String(output||"").replace(/\r\n/g,"\n"),lines=text.split("\n"),nonempty=lines.filter(x=>x.trim());
+ const ev=expected.evidence||{};
+ if(!shaOk(ev.work_start_rules_sha)||!shaOk(ev.work_start_checkpoint_sha)||!shaOk(ev.pre_output_rules_sha)||!shaOk(ev.pre_output_checkpoint_sha)) fail("READBACK_EVIDENCE","master/checkpoint SHA missing"); else pass("READBACK_EVIDENCE");
+ const f=expected.feedback_evidence||{};
+ if(expected.feedback_evidence&&(!shaOk(f.master_commit_sha)||!shaOk(f.checkpoint_commit_sha)||f.remote_readback_match!==true)) fail("FEEDBACK_EVIDENCE","feedback evidence invalid"); else pass("FEEDBACK_EVIDENCE");
+ if(expected.prior_send_history_verified!==true) hold("PRIOR_SEND_HISTORY","unverified"); else pass("PRIOR_SEND_HISTORY");
+ if(expected.validation_contract!=="STRICT_FULL_V1") fail("STRICT_VALIDATION_CONTRACT","validation_contract must be STRICT_FULL_V1"); else pass("STRICT_VALIDATION_CONTRACT");
+ if(!/^[0-9a-f]{64}$/i.test(String(expected.user_visible_output_sha256||""))) fail("USER_VISIBLE_OUTPUT_HASH_REQUIRED","64-char sha256 required"); else pass("USER_VISIBLE_OUTPUT_HASH_REQUIRED");
+ const reports=Array.isArray(expected.reports)?expected.reports:[];
+ const requiredCount=Number.isInteger(expected.required_report_count)?expected.required_report_count:reports.length;
+ if(requiredCount<1) fail("REPORT_COUNT","required_report_count must be >=1");
+ else if(reports.length!==requiredCount) fail("REPORT_COUNT",`expected reports ${reports.length}/${requiredCount}`); else pass("REPORT_COUNT",`${reports.length}/${requiredCount}`);
+ const publishers=reports.map(r=>String(r.publisher||"").trim()).filter(Boolean);
+ if(publishers.length!==reports.length) hold("PUBLISHER_SET_COMPLETE","publisher missing"); else pass("PUBLISHER_SET_COMPLETE",`${publishers.length}/${reports.length}`);
+ if(new Set(publishers.map(x=>x.toLowerCase())).size!==publishers.length) fail("PUBLISHER_DUPLICATE","all N reports must use different publishers"); else pass("PUBLISHER_DUPLICATE","all unique");
+ reports.forEach((r,i)=>{
+  const n=i+1;
+  if(r.toc_match_mode!==undefined||r.toc_min_lines!==undefined) fail(`R${n}_LOOSE_TOC_FIELDS_FORBIDDEN`,`toc_match_mode/toc_min_lines forbidden`); else pass(`R${n}_LOOSE_TOC_FIELDS_FORBIDDEN`);
+  if(r.toc_contract!=="EXACT_FULL") fail(`R${n}_TOC_CONTRACT`,`toc_contract must be EXACT_FULL`); else pass(`R${n}_TOC_CONTRACT`);
+  if(r.toc_source_verified!==true) hold(`R${n}_TOC_SOURCE`,`not verified`); else pass(`R${n}_TOC_SOURCE`);
+  if(!r.english_title||!r.korean_title||!r.publisher||!r.url) hold(`R${n}_CORE_FIELDS`,`missing core field`); else pass(`R${n}_CORE_FIELDS`);
+  if(!Array.isArray(r.toc_lines)||!r.toc_lines.length) hold(`R${n}_FULL_TOC_EXPECTED`,`full toc_lines missing`); else pass(`R${n}_FULL_TOC_EXPECTED`,`${r.toc_lines.length} lines`);
+ });
+ if(expected.mode==="preflight")return{status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:uniq(errors),holds:uniq(holds),checks};
+ const subject=`메일 제목: [해외시장자료 안내] ${expected.institution} ${expected.name}님`,email=`이메일 주소: ${expected.email}`;
+ if(nonempty[0]!==subject)fail("MAIL_SUBJECT","mismatch");else pass("MAIL_SUBJECT");
+ if(nonempty[1]!==email)fail("EMAIL","mismatch");else pass("EMAIL");
+ const starts=Array.from({length:requiredCount},(_,i)=>i+1).map(n=>lines.findIndex(x=>x.trim()===`추천자료 ${n}`)),headers=lines.filter(x=>/^추천자료\s+\d+\s*$/.test(x.trim()));
+ const ordered=starts.every((x,i)=>x>=0&&(i===0||starts[i-1]<x));
+ if(starts.some(x=>x<0)||headers.length!==requiredCount||!ordered)fail("ACTUAL_REPORT_COUNT",`not exactly ${requiredCount} ordered blocks`);else pass("ACTUAL_REPORT_COUNT",`${requiredCount}/${requiredCount}`);
+ for(let i=0;i<reports.length;i++){
+  const n=i+1,r=reports[i],start=starts[i],next=i<reports.length-1&&starts[i+1]>=0?starts[i+1]:lines.length;if(start<0)continue;
+  const block=lines.slice(start,next),find=rx=>block.findIndex(x=>rx.test(x.trim()));
+  const e=find(/^##\s+영문 제목:/),k=find(/^##\s+한글 제목(?:\(참고 번역\))?:/),p=find(/^◇ 발행사:/),d=find(/^◇ 발행일:/),u=find(/^자세한 내용의 링크:/),t=find(/^목차:$/),info=find(/^보고서 정보:\s*$/);
+  if([e,k,p,d,u,t,info].some(x=>x<0))fail(`R${n}_FIELD_ORDER_OR_MISSING`);else if(!(e<k&&k<p&&p<d&&d<u&&u<t&&t<info))fail(`R${n}_FIELD_ORDER_OR_MISSING`,`wrong order`);else pass(`R${n}_FIELD_ORDER_OR_MISSING`);
+  if(e<0||block[e].trim().replace(/^##\s+영문 제목:\s*/,"")!==r.english_title)fail(`R${n}_OFFICIAL_ENGLISH_TITLE`);else pass(`R${n}_OFFICIAL_ENGLISH_TITLE`);
+  if(k<0||block[k].trim().replace(/^##\s+한글 제목(?:\(참고 번역\))?:\s*/,"")!==r.korean_title)fail(`R${n}_FULL_KOREAN_TITLE`);else pass(`R${n}_FULL_KOREAN_TITLE`);
+  if(p<0){fail(`R${n}_BOOK_INFO_LINE1`)}else{const v=block[p].trim();if(!v.includes(`◇ 발행사: ${r.publisher}`))fail(`R${n}_PUBLISHER`);else pass(`R${n}_PUBLISHER`);if(r.pages&&!v.includes(`( ${r.pages} Pages )`))fail(`R${n}_PAGES`);else pass(`R${n}_PAGES`);if(r.price_display&&!v.includes(`◇ 정가: ${r.price_display}`))fail(`R${n}_PRICE`);else pass(`R${n}_PRICE`);if(!/^◇ 발행사:.*\(\s*[^)]*Pages\s*\).*◇ 정가:/.test(v))fail(`R${n}_BOOK_INFO_LINE1`);else pass(`R${n}_BOOK_INFO_LINE1`);}
+  if(d<0){fail(`R${n}_BOOK_INFO_LINE2`)}else{const v=block[d].trim();if(r.publication_date_display&&!v.includes(`◇ 발행일: ${r.publication_date_display}`))fail(`R${n}_PUBLICATION_DATE`);else pass(`R${n}_PUBLICATION_DATE`);if(!/-PDF-.*◆ 공급가격:/.test(v))fail(`R${n}_BOOK_INFO_LINE2`);else pass(`R${n}_BOOK_INFO_LINE2`);}
+  if(u<0){fail(`R${n}_URL_EXACT`);fail(`R${n}_TRACKING_URL`)}else{const url=block[u].trim().replace(/^자세한 내용의 링크:\s*/,"");if(url!==r.url)fail(`R${n}_URL_EXACT`);else pass(`R${n}_URL_EXACT`);if(/[?&](?:utm_[^=]+|fbclid|gclid|mc_cid|mc_eid|_ga|_gl)=|chatgpt\.com/i.test(url))fail(`R${n}_TRACKING_URL`);else pass(`R${n}_TRACKING_URL`,`stored/output URL clean`);}
+  if(t<0||info<=t){fail(`R${n}_TOC_SECTION`)}else{
+   pass(`R${n}_TOC_SECTION`);
+   const toc=block.slice(t+1,info).filter(x=>x.trim()).map(x=>x.replace(/\s+$/, ""));
+   const exp=(r.toc_lines||[]).map(x=>String(x).replace(/\s+$/, ""));
+   if(toc.length!==exp.length)fail(`R${n}_TOC_FULL_LENGTH`,`${toc.length}/${exp.length}`);else pass(`R${n}_TOC_FULL_LENGTH`,`${toc.length}/${exp.length}`);
+   if(toc.join("\n")!==exp.join("\n"))fail(`R${n}_TOC_EXACT_ALL_LINES`);else pass(`R${n}_TOC_EXACT_ALL_LINES`);
+   if(!exp.length||toc.at(-1)!==exp.at(-1))fail(`R${n}_TOC_LAST_ITEM`);else pass(`R${n}_TOC_LAST_ITEM`,exp.at(-1));
+   let numberingOK=true,indentOK=true;
+   for(let j=0;j<Math.max(toc.length,exp.length);j++){
+    const ex=exp[j]??"",ac=toc[j]??"";
+    const expNum=(ex.trim().match(/^(\d+(?:\.\d+)*\.?|Chapter-\s*\d+)/i)||[,""])[1];
+    const actNum=(ac.trim().match(/^(\d+(?:\.\d+)*\.?|Chapter-\s*\d+)/i)||[,""])[1];
+    if(expNum!==actNum)numberingOK=false;
+    if((ac.match(/^\s*/)||[""])[0].length!==(ex.match(/^\s*/)||[""])[0].length)indentOK=false;
+   }
+   if(!numberingOK)fail(`R${n}_TOC_NUMBER_COPYABLE`);else pass(`R${n}_TOC_NUMBER_COPYABLE`);
+   if(!indentOK)fail(`R${n}_TOC_INDENTATION`);else pass(`R${n}_TOC_INDENTATION`);
+   const subExp=exp.filter(x=>/^\s+\S/.test(x)),subAct=toc.filter(x=>/^\s+\S/.test(x));
+   if(subAct.length!==subExp.length||subAct.join("\n")!==subExp.join("\n"))fail(`R${n}_TOC_SUBHEADINGS_ALL_PRESENT`,`${subAct.length}/${subExp.length}`);else pass(`R${n}_TOC_SUBHEADINGS_ALL_PRESENT`,`${subAct.length}/${subExp.length}`);
   }
-  if(expected.prior_send_history_verified!==true) holds.push("PRIOR_SEND_HISTORY_UNVERIFIED");
-  if(expected.mode==="preflight") return {status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:[...new Set(errors)],holds:[...new Set(holds)]};
-
-  const subject="메일 제목: [해외시장자료 안내] "+expected.institution+" "+expected.name+"님";
-  const email="이메일 주소: "+expected.email;
-  if(nonempty[0]!==subject) errors.push("MAIL_SUBJECT_MISSING_OR_MISMATCH");
-  if(nonempty[1]!==email) errors.push("EMAIL_MISSING_OR_MISMATCH");
-
-  const reports=Array.isArray(expected.reports)?expected.reports:[];
-  if(reports.length!==3) errors.push("EXPECTED_REPORT_COUNT_NOT_THREE");
-  const starts=[1,2,3].map(n=>lines.findIndex(x=>x.trim()==="추천자료 "+n));
-  if(starts.some(x=>x<0)||!(starts[0]<starts[1]&&starts[1]<starts[2])) errors.push("REPORT_BLOCK_ORDER_INVALID");
-  const sent=new Set((expected.prior_sent_titles||[]).map(x=>String(x).trim().toLowerCase()));
-
-  for(let i=0;i<reports.length;i++){
-    const n=i+1,start=starts[i],next=i<2&&starts[i+1]>=0?starts[i+1]:lines.length;
-    if(start<0) continue;
-    const block=lines.slice(start,next), find=rx=>block.findIndex(x=>rx.test(x.trim()));
-    const e=find(/^##\s+영문 제목:\s*\S/),k=find(/^##\s+한글 제목(?:\(참고 번역\))?:\s*\S/);
-    const p=find(/^◇ 발행사:\s*\S.*\(\s*[^)]*Pages\s*\).*◇ 정가:\s*(?:[$€₤¥]|확인 필요)/);
-    const d=find(/^◇ 발행일:\s*\S.*-PDF-.*◆ 공급가격:\s*(?:[\d,]+\s*원|확인 필요)/);
-    const u=find(/^자세한 내용의 링크:\s*https?:\/\//),t=find(/^목차:$/),info=find(/^보고서 정보:\s*\S/);
-    if(e<0) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
-    if(k<0) errors.push("REPORT_"+n+"_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
-    if(p<0) errors.push("REPORT_"+n+"_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
-    if(d<0) errors.push("REPORT_"+n+"_PUBLISHED_SUPPLY_LINE_FORMAT_INVALID");
-    if(u<0) errors.push("REPORT_"+n+"_DETAIL_LINK_MISSING");
-    if(info<0) errors.push("REPORT_"+n+"_REPORT_INFO_MISSING");
-    const ordered=[e,k,p,d,u,t,info];
-    if(ordered.some(x=>x<0)||ordered.some((x,j)=>j&&x<=ordered[j-1])) errors.push("REPORT_"+n+"_FIELD_ORDER_INVALID");
-    const r=reports[i]||{};
-    if(e>=0){
-      const actual=block[e].trim().replace(/^##\s+영문 제목:\s*/,"");
-      if(r.english_title&&actual!==r.english_title) errors.push("REPORT_"+n+"_ENGLISH_TITLE_MISMATCH");
-      if(sent.has(actual.toLowerCase())) errors.push("REPORT_"+n+"_PRIOR_SENT_DUPLICATE");
-    }
-    if(k>=0){
-      const prefix=r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ";
-      if(!r.korean_title||block[k].trim()!==prefix+r.korean_title) errors.push("REPORT_"+n+"_KOREAN_TITLE_OR_LABEL_MISMATCH");
-    }
-    if(u>=0){
-      const url=block[u].trim().replace(/^자세한 내용의 링크:\s*/,"");
-      if(r.url&&url!==r.url) errors.push("REPORT_"+n+"_DETAIL_LINK_MISMATCH");
-      if(/[?&](?:utm_[^=]+|fbclid|gclid|mc_cid|mc_eid|_ga|_gl)=|chatgpt\.com/i.test(url)) errors.push("REPORT_"+n+"_TRACKING_LINK_FORBIDDEN");
-      if(/\.pdf(?:$|[?#])|brochure|\/file\//i.test(url)) errors.push("REPORT_"+n+"_BROCHURE_OR_FILE_LINK_FORBIDDEN");
-    }
-    if(info>=0&&!/\d/.test(block[info])) errors.push("REPORT_"+n+"_REPORT_INFO_NUMERIC_SOURCE_MISSING");
-    const expectedToc=(r.toc_lines||[]).map(x=>String(x).replace(/\s+$/,""));
-    if(!expectedToc.length){holds.push("REPORT_"+n+"_PUBLIC_TOC_EXPECTED_MISSING");continue;}
-    if(t<0){errors.push("REPORT_"+n+"_TOC_MISSING");continue;}
-    const tocEnd=info>t?info:block.length;
-    const actualToc=block.slice(t+1,tocEnd).filter(x=>x.trim()).map(x=>x.replace(/\s+$/,""));
-    if(actualToc.length!==expectedToc.length) errors.push("REPORT_"+n+"_TOC_INCOMPLETE");
-    if(actualToc.length&&expectedToc.length&&actualToc[actualToc.length-1].trim()!==expectedToc[expectedToc.length-1].trim()) errors.push("REPORT_"+n+"_TOC_LAST_ITEM_MISSING_OR_MISMATCH");
-    const num=line=>(line.trim().match(/^(\d+(?:\.\d+)*\.?|Chapter-\s*\d+)/i)||[,""])[1];
-    const depth=line=>{const m=num(line).match(/\d+(?:\.\d+)*/);return m?m[0].split(".").length:((line.match(/^\s*/)||[""])[0].length?2:1);};
-    if(actualToc.some(x=>depth(x)>2)) errors.push("REPORT_"+n+"_TOC_DEPTH_EXCEEDED");
-    const count=Math.min(actualToc.length,expectedToc.length);
-    let numberMismatch=false,indentMismatch=false,sourceMismatch=false,orderMismatch=false;
-    for(let j=0;j<count;j++){
-      if(num(actualToc[j])!==num(expectedToc[j])) numberMismatch=true;
-      if((actualToc[j].match(/^\s*/)||[""])[0].length!==(expectedToc[j].match(/^\s*/)||[""])[0].length) indentMismatch=true;
-      if(actualToc[j].trim()!==expectedToc[j].trim()) sourceMismatch=true;
-    }
-    const aset=actualToc.map(x=>x.trim()).sort().join("\n"),eset=expectedToc.map(x=>x.trim()).sort().join("\n");
-    if(aset===eset&&actualToc.map(x=>x.trim()).join("\n")!==expectedToc.map(x=>x.trim()).join("\n")) orderMismatch=true;
-    if(numberMismatch) errors.push("REPORT_"+n+"_TOC_NUMBER_MISMATCH");
-    if(indentMismatch) errors.push("REPORT_"+n+"_TOC_INDENTATION_MISMATCH");
-    if(orderMismatch) errors.push("REPORT_"+n+"_TOC_HIERARCHY_ORDER_MISMATCH");
-    if(sourceMismatch&&!orderMismatch) errors.push("REPORT_"+n+"_TOC_SOURCE_TEXT_MISMATCH");
-  }
-  if(/\bPASS\b/.test(text)&&(errors.length||holds.length)) errors.push("INVALID_PASS_CLAIM");
-  return {status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:[...new Set(errors)],holds:[...new Set(holds)]};
+  if(info<0){fail(`R${n}_REPORT_INFO_LABEL_SEPARATE`);fail(`R${n}_REPORT_INFO_BODY`)}else{const body=(block[info+1]||"").trim();if(block[info].trim()!=="보고서 정보:")fail(`R${n}_REPORT_INFO_LABEL_SEPARATE`);else pass(`R${n}_REPORT_INFO_LABEL_SEPARATE`);if(!body)fail(`R${n}_REPORT_INFO_BODY`);else pass(`R${n}_REPORT_INFO_BODY`);if(r.report_info_ko_exact!==undefined&&body!==r.report_info_ko_exact)fail(`R${n}_REPORT_INFO_EXACT`);else pass(`R${n}_REPORT_INFO_EXACT`);}
+ }
+ const actualHash=hash(text);
+ if(!/^[0-9a-f]{64}$/i.test(String(expected.user_visible_output_sha256||""))) fail("USER_VISIBLE_OUTPUT_EXACT","expected hash missing");
+ else if(actualHash!==expected.user_visible_output_sha256)fail("USER_VISIBLE_OUTPUT_EXACT","final user-visible body differs from validated fixture");else pass("USER_VISIBLE_OUTPUT_EXACT",actualHash);
+ return{status:errors.length?"FAIL":holds.length?"HOLD":"PASS",errors:uniq(errors),holds:uniq(holds),checks,output_sha256:actualHash};
 }
 
-function buildFixture(){
- const s="a".repeat(40),e={institution:"한국탄소산업진흥원",name:"김명곤",email:"mgkim@kcarbon.or.kr",prior_send_history_verified:true,prior_sent_titles:[],evidence:{work_start_rules_sha:s,work_start_checkpoint_sha:s,pre_output_rules_sha:s,pre_output_checkpoint_sha:s},reports:[
- {english_title:"Carbon A",korean_title:"탄소 A",korean_title_type:"reference",url:"https://publisher.example/a",toc_lines:["1. Market Overview","  1.1 Market Definition"]},
- {english_title:"Carbon B",korean_title:"탄소 B",korean_title_type:"official",url:"https://publisher.example/b",toc_lines:["1. Executive Summary","  1.1 Key Findings"]},
- {english_title:"Carbon C",korean_title:"탄소 C",korean_title_type:"official",url:"https://publisher.example/c",toc_lines:["1. Introduction","  1.1 Objectives"]}]};
- const rep=(n,r)=>["추천자료 "+n,"## 영문 제목: "+r.english_title,(r.korean_title_type==="reference"?"## 한글 제목(참고 번역): ":"## 한글 제목: ")+r.korean_title,"◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행일: 2026년 08월 -PDF-        ◆ 공급가격: 7,425,000원","자세한 내용의 링크: "+r.url,"목차:",...r.toc_lines,"보고서 정보: 2026년 시장규모 100"].join("\n");
- return {expected:e,good:["메일 제목: [해외시장자료 안내] 한국탄소산업진흥원 김명곤님","이메일 주소: mgkim@kcarbon.or.kr",...e.reports.map((r,i)=>rep(i+1,r))].join("\n")};
-}
-
-function runSelfTest(){
- const b=buildFixture(),s="a".repeat(40),cases=[],add=(id,o,e,status,code)=>{const r=validateCustomerGuidanceOutput(o,e);if(r.status!==status||code&&!r.errors.concat(r.holds).includes(code))throw new Error(id+JSON.stringify(r));cases.push({id,status,evidence:code||"errors=0"});};
- add("VALID",b.good,b.expected,"PASS",null);
- add("SMALL_EN_TITLE",b.good.replace("## 영문 제목: Carbon A","영문 제목: Carbon A"),b.expected,"FAIL","REPORT_1_ENGLISH_TITLE_MISSING_OR_NOT_LARGE");
- add("SMALL_KO_TITLE",b.good.replace("## 한글 제목(참고 번역): 탄소 A","한글 제목(참고 번역): 탄소 A"),b.expected,"FAIL","REPORT_1_KOREAN_TITLE_MISSING_OR_NOT_LARGE");
- add("NO_DETAIL_LINK",b.good.replace(/^자세한 내용의 링크:[^\n]+\n/m,""),b.expected,"FAIL","REPORT_1_DETAIL_LINK_MISSING");
- add("BAD_BOOK_LINE",b.good.replace("◇ 발행사: Publisher (100 Pages)        ◇ 정가: $ 4,950","◇ 발행사: Publisher"),b.expected,"FAIL","REPORT_1_PUBLISHER_PRICE_LINE_FORMAT_INVALID");
- add("TOC_DEPTH",b.good.replace("  1.1 Market Definition","    1.1.1 Market Definition"),b.expected,"FAIL","REPORT_1_TOC_DEPTH_EXCEEDED");
- add("TOC_TRUNCATED",b.good.replace("\n  1.1 Market Definition",""),b.expected,"FAIL","REPORT_1_TOC_INCOMPLETE");
- add("TOC_TRANSLATED",b.good.replace("1. Market Overview","1. 시장 개요"),b.expected,"FAIL","REPORT_1_TOC_SOURCE_TEXT_MISMATCH");
- add("NO_REPORT_INFO",b.good.replace(/^보고서 정보:[^\n]+\n/m,""),b.expected,"FAIL","REPORT_1_REPORT_INFO_MISSING");
- add("TRACKING",b.good.replace("https://publisher.example/a","https://publisher.example/a?utm_source=chatgpt.com"),b.expected,"FAIL","REPORT_1_TRACKING_LINK_FORBIDDEN");
- add("PDF_LINK",b.good.replace("https://publisher.example/a","https://publisher.example/a/brochure.pdf"),b.expected,"FAIL","REPORT_1_BROCHURE_OR_FILE_LINK_FORBIDDEN");
- const dup=JSON.parse(JSON.stringify(b.expected));dup.prior_sent_titles=["Carbon A"];add("PRIOR_DUPLICATE",b.good,dup,"FAIL","REPORT_1_PRIOR_SENT_DUPLICATE");
- const hist=JSON.parse(JSON.stringify(b.expected));hist.prior_send_history_verified=false;add("HISTORY_HOLD",b.good,hist,"HOLD","PRIOR_SEND_HISTORY_UNVERIFIED");
- const feedback=JSON.parse(JSON.stringify(b.expected));feedback.feedback_evidence={classification:"execution_error",master_commit_sha:s,checkpoint_commit_sha:s,remote_readback_match:true};add("FEEDBACK_EVIDENCE_VALID",b.good,feedback,"PASS",null);
- const feedbackMissing=JSON.parse(JSON.stringify(feedback));feedbackMissing.feedback_evidence.remote_readback_match=false;add("FEEDBACK_READBACK_MISSING",b.good,feedbackMissing,"FAIL","FEEDBACK_REMOTE_READBACK_MISSING");
- const deterministic=JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected))===JSON.stringify(validateCustomerGuidanceOutput(b.good,b.expected));if(!deterministic)throw new Error("NON_DETERMINISTIC");cases.push({id:"DETERMINISTIC_REPEAT",status:"PASS",evidence:"same input same result"});
- return {cases,summary:{total:cases.length}};
+function selfTest(){
+ const s="a".repeat(40);
+ const makeBase=count=>({institution:"기관",name:"고객",email:"a@b.com",required_report_count:count,prior_send_history_verified:true,validation_contract:"STRICT_FULL_V1",evidence:{work_start_rules_sha:s,work_start_checkpoint_sha:s,pre_output_rules_sha:s,pre_output_checkpoint_sha:s},feedback_evidence:{master_commit_sha:s,checkpoint_commit_sha:s,remote_readback_match:true},reports:Array.from({length:count},(_,i)=>{const n=i+1;return{english_title:`Title ${n}`,korean_title:`제목 ${n}`,publisher:`Pub ${n}`,pages:"100",price_display:"$ 1",publication_date_display:"2026년",url:`https://example.com/${n}`,toc_contract:"EXACT_FULL",toc_source_verified:true,toc_lines:["1. Main","  1.1 Sub","2. End"],report_info_ko_exact:"정보"}})});
+ const report=(n,r)=>[`추천자료 ${n}`,`## 영문 제목: ${r.english_title}`,`## 한글 제목: ${r.korean_title}`,`◇ 발행사: ${r.publisher} ( ${r.pages} Pages ) ◇ 정가: ${r.price_display}`,`◇ 발행일: ${r.publication_date_display} -PDF- ◆ 공급가격: `,`자세한 내용의 링크: ${r.url}`,"목차:",...r.toc_lines,"보고서 정보:",r.report_info_ko_exact].join("\n");
+ const makeRaw=base=>[`메일 제목: [해외시장자료 안내] 기관 고객님`,`이메일 주소: a@b.com`,...base.reports.map((r,i)=>report(i+1,r))].join("\n");
+ const tests=[];
+ const run=(name,out,exp,want)=>{const got=validateCustomerGuidanceOutput(out,exp).status;tests.push({name,got,want});if(got!==want)throw new Error(`${name}:${got}!=${want}`)};
+ const base3=makeBase(3),raw3=makeRaw(base3);base3.user_visible_output_sha256=hash(raw3);
+ run("exact_full_3_pass",raw3,base3,"PASS");
+ run("subheading_removed",raw3.replace("  1.1 Sub\n",""),base3,"FAIL");
+ run("tracking_added",raw3.replace("https://example.com/1","https://example.com/1?utm_source=chatgpt.com"),base3,"FAIL");
+ run("third_report_removed",raw3.replace(/추천자료 3[\s\S]*$/,""),base3,"FAIL");
+ const loose=JSON.parse(JSON.stringify(base3));loose.reports[0].toc_match_mode="required";run("loose_mode_forbidden",raw3,loose,"FAIL");
+ const nohash=JSON.parse(JSON.stringify(base3));delete nohash.user_visible_output_sha256;run("hash_required",raw3,nohash,"FAIL");
+ const base4=makeBase(4),raw4=makeRaw(base4);base4.user_visible_output_sha256=hash(raw4);run("exact_full_4_pass",raw4,base4,"PASS");
+ const dup=JSON.parse(JSON.stringify(base4));dup.reports[3].publisher=dup.reports[0].publisher;const dupRaw=makeRaw(dup);dup.user_visible_output_sha256=hash(dupRaw);run("publisher_duplicate_4_fail",dupRaw,dup,"FAIL");
+ return{status:"PASS",tests};
 }
 
 if(typeof module!=="undefined")module.exports={validateCustomerGuidanceOutput};
-if(typeof require!=="undefined"&&require.main===module){const fs=require("fs");if(process.argv.includes("--self-test")){process.stdout.write(JSON.stringify(runSelfTest(),null,2)+"\n");process.exit(0);}const o=process.argv[2],e=process.argv[3];if(!o||!e){process.stderr.write("Usage: node customer_guidance_output_gate.js <output.txt> <expected.json> | --self-test\n");process.exit(2);}const r=validateCustomerGuidanceOutput(fs.readFileSync(o,"utf8"),JSON.parse(fs.readFileSync(e,"utf8")));process.stdout.write(JSON.stringify(r,null,2)+"\n");process.exit(r.status==="PASS"?0:1);}
+if(typeof require!=="undefined"&&require.main===module){
+ const fs=require("fs"),a=process.argv.slice(2);
+ if(a[0]==="--self-test"){process.stdout.write(JSON.stringify(selfTest(),null,2)+"\n");process.exit(0);}
+ const emit=a[0]==="--emit-if-pass",o=emit?a[1]:a[0],e=emit?a[2]:a[1];
+ if(!o||!e){process.stderr.write("Usage: node customer_guidance_output_gate.js [--emit-if-pass] <output.txt> <expected.json> | --self-test\n");process.exit(2);}
+ const raw=fs.readFileSync(o,"utf8"),r=validateCustomerGuidanceOutput(raw,JSON.parse(fs.readFileSync(e,"utf8")));
+ if(emit&&r.status==="PASS")process.stdout.write(raw);else process.stdout.write(JSON.stringify(r,null,2)+"\n");
+ process.exit(r.status==="PASS"?0:1);
+}

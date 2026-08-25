@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "pipeline_id": "89f6477b8ebbd450fd3c",
+  "target": "TOOL042",
+  "source_ref": "CURRENT_CHAT#20260825-t42-fix-consumed",
+  "root_cause_id": "T42-RC-CUSTOMER-BRANCH",
+  "adapter": "REPOSITORY_DIFF_ONLY",
+  "pre_apply_commit": "6176562deec4533b4ffc8f52394c793b37951e01",
+  "mutation_scope": "PIPELINE_EVIDENCE_ONLY",
+  "customer_data_mutated": false
+}

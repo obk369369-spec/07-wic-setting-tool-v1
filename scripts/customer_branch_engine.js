@@ -11,7 +11,7 @@ function branchCustomer(state, candidates) {
   const type = state.customer_type || (/정책|지원|연구|진흥|공공/.test([state.department,...state.business_directions].join(" ")) ? "RESEARCH_POLICY" : "ENTERPRISE");
   const axes = [...state.business_directions,...state.current_interests].map(x=>String(x).toLowerCase());
   const prior = new Set((state.prior_sent_titles||[]).map(x=>String(x).toLowerCase()));
-  const eligible = (candidates||[]).filter(x => x.verified === true && !prior.has(String(x.title).toLowerCase()) && (x.direct_match === true || (x.topics||[]).some(t=>axes.some(a=>a.includes(String(t).toLowerCase())||String(t).toLowerCase().includes(a)))));
+  const eligible = (candidates||[]).filter(x => x.verified === true && x.paid === true && x.tradable === true && ['title','publisher','publication_date','link','source_ref'].every(k=>typeof x[k]==='string'&&x[k].trim()) && /^https:\/\//.test(x.link) && !prior.has(String(x.title).toLowerCase()) && (x.direct_match === true || (x.topics||[]).some(t=>axes.some(a=>a.includes(String(t).toLowerCase())||String(t).toLowerCase().includes(a)))));
   const distinct=[] , publishers=new Set();
   for(const item of eligible){if(!publishers.has(item.publisher)){publishers.add(item.publisher);distinct.push(item);}}
   const required=Number(state.required_recommendation_count||3);
@@ -49,7 +49,7 @@ function prepareContactCopy(state,ctx,reply){
   const r={status:"DRAFT",turns,email_body:turns.join("\n\n"),phone_message:ctx.landline_unavailable?"":turns.join("\n"),channel:ctx.landline_unavailable?"EMAIL":"CONTACT_DECISION_REQUIRED",next_action:next,recommendation_allowed:next==="SELECT_VERIFIED_MATERIALS_FOR_CONFIRMED_SCOPE",source_ref:ctx.source_ref,history_kind:kind,cue_card:{start:turns[0],ask:turns[turns.length-1],then:next==="SELECT_VERIFIED_MATERIALS_FOR_CONFIRMED_SCOPE"?"확인된 범위만 자료 검증":"답변을 기다립니다."},quality_scope:"AUTOMATED_CONSTRAINTS_ONLY_NOT_ACTUAL_CALL_RECEPTION"};
   r.send_allowed=false;
   r.issues=validateContactCopy(r);r.status=r.issues.length?"HOLD":"DRAFT_VALIDATED";
-  if(r.issues.length){r.recommendation_allowed=false;r.next_action="VERIFY_COPY_EVIDENCE";r.phone_message="";r.email_body="";}
+  if(r.issues.length){r.recommendation_allowed=false;r.next_action="VERIFY_COPY_EVIDENCE";r.phone_message="";r.email_body="";r.turns=[];r.cue_card={};}
   return r;
 }
 function validateContactCopy(r){
@@ -64,7 +64,8 @@ function validateContactCopy(r){
 module.exports={branchCustomer,prepareContactCopy,validateContactCopy};
 if(require.main===module){
   const p=JSON.parse(require('fs').readFileSync(0,'utf8'));
-  const out=prepareContactCopy(p.state||{},p.context,p.reply);
-  process.stdout.write(JSON.stringify(out)+'\n');
-  process.exitCode=out.status==='DRAFT_VALIDATED'?0:2;
+  require('./customer_work_start').startCustomerWork(p).then(out=>{
+    process.stdout.write(JSON.stringify(out)+'\n');
+    process.exitCode=out.status==='DRAFT_VALIDATED'?0:2;
+  });
 }

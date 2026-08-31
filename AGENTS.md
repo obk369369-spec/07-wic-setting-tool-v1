@@ -1,0 +1,5 @@
+# TOOL042 customer-work entry
+
+New customer work starts through `scripts/customer_work_start.js` (also used by the customer_branch_engine CLI), with customer_id and explicit materials_required. The native entry automatically loads pinned CENTRAL and tool masters/checkpoints, actual feedback and the private CLEAN customer master; it passes the same snapshot to generation. Do not bypass it with caller-supplied verified booleans or copy_context. Low-level exports remain compatibility functions and do not prove preload.
+
+Missing current customer/history, ambiguous identity, source authentication failure or missing actual materials is HOLD with no customer draft. Sales-material work requires actual source verification and suitability before copy. This entry currently supports only uniquely source-linked historical questions; it does not claim sales-material automation or universal semantic review. Save actual results to the existing checkpoint and CENTRAL ledger before handoff. This repository instruction is not a global ChatGPT/Work interception hook. Reuse existing PASS evidence; no full audit or unchanged test replay.

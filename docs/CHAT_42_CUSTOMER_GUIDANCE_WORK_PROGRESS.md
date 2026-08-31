@@ -150,3 +150,17 @@
 - 출력게이트 수정 Commit SHA: `3caea5a9983bf5c6448d51b69e74ba6035257151`.
 - 중앙마스터 보강 Commit SHA: `1b8ccafcfc1257d28477ee3ba5125c53452efdef`.
 - 현재 김명곤 안내서는 사용자 실제 화면 검수 전이므로 최종 PASS 아님.
+
+
+## 2026-08-31 — 41/42 선조회·생성 연결부 증분 작업
+
+- 기존 PASS/VERIFIED 테스트는 SKIP_REUSE. 전수감사·기존 데이터 복원·실제 발송 없음.
+- 최신 CENTRAL/각 TOOL MASTER·checkpoint·실제 피드백·CLEAN 고객 MASTER를 revision 고정으로 읽고 동일 snapshot을 생성에 전달하는 native entry 추가.
+- 이번 native 검증은 GitHub connector로 회수한 정본 snapshot transport replay이며 shell private repo 인증 E2E가 아님.
+- 사용자 과거 설명/첨부/checkpoint 전달 요구 0회. 일일 수동개입 0회 전체 운영은 아직 미증명.
+- 실제 최신 고객 전체 E2E: HOLD. 과거 실제 문구 교정 재현과 현재 고객 검증을 구분.
+- 남은 내부 OPEN: 의미 기반 8항목 전체 검사/자유 재작성, native 작업종료 자동 CENTRAL 저장 트랜잭션, 호환 low-level API를 포함한 모든 진입점 강제.
+- 남은 인증/근거 HOLD: private MASTER 런타임 인증, 실제 실패 고객의 현재 CLEAN MASTER 식별/접촉근거, 실제 판매자료 및 적합성 근거.
+- NEXT_WORK: 현재 고객·자료 근거가 자동으로 연결되면 그 고객 1건만 preflight→생성→검사→정본 저장 E2E. 폐기된 과거 고객 데이터는 복구하지 않는다.
+- 중앙 증거: customer_pipeline/TOOL041_042_AUTOMATION_20260831.json.
+- TOOL042: `scripts/customer_work_start.js`; 기존 branch CLI도 이 entry 사용. 9-source preflight→generation. FAIL turns/cue_card 누출 제거 및 자료 paid/tradable/source 필수화. 변경부 5개 검사 PASS; ROB-010 현재 경로는 CURRENT_MASTER_ID_NOT_UNIQUE HOLD. 과거 교정 1회는 DRAFT_VALIDATED이며 실제 고객 PASS 아님.

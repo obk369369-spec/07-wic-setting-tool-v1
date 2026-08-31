@@ -104,6 +104,14 @@ if(typeof require!=="undefined"&&require.main===module){
  const emit=a[0]==="--emit-if-pass",o=emit?a[1]:a[0],e=emit?a[2]:a[1];
  if(!o||!e){process.stderr.write("Usage: node customer_guidance_output_gate.js [--emit-if-pass] <output.txt> <expected.json> | --self-test\n");process.exit(2);}
  const raw=fs.readFileSync(o,"utf8"),r=validateCustomerGuidanceOutput(raw,JSON.parse(fs.readFileSync(e,"utf8")));
- if(emit&&r.status==="PASS")process.stdout.write(raw);else process.stdout.write(JSON.stringify(r,null,2)+"\n");
- process.exit(r.status==="PASS"?0:1);
+ if(emit){
+  const expected=JSON.parse(fs.readFileSync(e,"utf8"));
+  require('./customer_work_start').loadCanonical().then(context=>{
+    const result=require('./customer_release_bridge').release(context,{text:raw,format_check:r,customer_id:expected.customer_id});
+    process.stdout.write(JSON.stringify(result)+"\n");process.exitCode=2;
+  }).catch(()=>{process.stdout.write(JSON.stringify(require('./customer_release_bridge').release({},{}))+"\n");process.exitCode=2;});
+ }else{
+  process.stdout.write(JSON.stringify({...r,output_allowed:false,scope:"FORMAT_DIAGNOSTIC_ONLY_NOT_CUSTOMER_RELEASE"},null,2)+"\n");
+  process.exitCode=r.status==="PASS"?0:1;
+ }
 }

@@ -5,6 +5,7 @@ const CENTRAL='obk369369-spec/20-operational-manual-viewer';
 const TOOL='obk369369-spec/07-wic-setting-tool-v1';
 const CUSTOMERS='obk369369-spec/41-wic-email-collection-master';
 const SOURCES={
+  release_gate:[CENTRAL,'customer_pipeline/customer_release_gate.py'],
   central_master:[CENTRAL,'CUSTOMER_WORKFLOW_MASTER.md'],
   copy_rules:[CENTRAL,'CUSTOMER_CALL_SCRIPT_LOCK.md'],
   feedback:[CENTRAL,'customer_pipeline/contact_copy_actual_cases.json'],
@@ -48,8 +49,8 @@ function parseCSV(text){
   const header=rows.shift()||[];
   return rows.map(values=>Object.fromEntries(header.map((key,i)=>[key,values[i]||''])));
 }
-function generateFromContext(request,context){
-  const {prepareContactCopy,validateContactCopy}=require('./customer_branch_engine');
+function generateInternal(request,context){
+  const {prepareContactCopy,validateContactCopy}=require('./_customer_branch_internal');
   const feedback=JSON.parse(context.feedback);
   const receipt={revisions:context.revisions,source_sha256:context.source_sha256,feedback_ref:feedback.current_feedback_ref,manual_checkpoint_transfer_count:0};
   const hold=reason=>({status:'HOLD',reason,turns:[],phone_message:'',email_body:'',send_allowed:false,preload_receipt:receipt});
@@ -76,7 +77,10 @@ function generateFromContext(request,context){
 }
 async function startCustomerWork(request,read=api){
   try{return generateFromContext(request,await loadCanonical(read));}
-  catch(error){return {status:'HOLD',reason:'CANONICAL_PRELOAD_UNAVAILABLE',error_type:error.name,turns:[],phone_message:'',email_body:'',send_allowed:false};}
+  catch(error){return require('./customer_release_bridge').release({}, {status:'HOLD',reason:'CANONICAL_PRELOAD_UNAVAILABLE'});}
+}
+function generateFromContext(request,context){
+  return require('./customer_release_bridge').release(context,generateInternal(request,context));
 }
 module.exports={SOURCES,loadCanonical,parseCSV,generateFromContext,startCustomerWork};
 if(require.main===module){startCustomerWork(JSON.parse(require('fs').readFileSync(0,'utf8'))).then(result=>{

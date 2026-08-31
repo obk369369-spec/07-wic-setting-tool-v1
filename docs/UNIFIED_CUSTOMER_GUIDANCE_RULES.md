@@ -16,6 +16,8 @@
 4. 과거 분야별 지시문·대화기록·구버전 문서
 
 ## 2. 역할 경계
+멘트 생성 시 CENTRAL `CUSTOMER_CALL_SCRIPT_LOCK.md`를 함께 적용한다. `scripts/customer_branch_engine.js`의 `prepareContactCopy`는 source-backed `copy_context`를 필수로 받는다. 일방 발송/실제 답변/견적/구매를 구분하며, 자료 추천 판정이 PASS여도 멘트 근거가 없으면 `VERIFY_COPY_EVIDENCE / HOLD`로 차단한다. 짧은 질문 후 고객의 범위 확인 전 발송으로 진행하지 않는다. 자동 품질 판정은 `DRAFT_VALIDATED`이며 실제 통화 평가나 일반 Chat 자동호출 COMPLETE가 아니다.
+
 ### 이메일 수집/검증
 - 고객 발굴
 - 기관/부서/이름/직책/이메일 검증

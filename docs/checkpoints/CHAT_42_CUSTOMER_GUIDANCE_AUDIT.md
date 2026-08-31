@@ -1,5 +1,14 @@
 # 42번 고객 안내 — 증분 검증 체크포인트
 
+## 2026-08-31 멘트 품질 변경 단위
+
+- 기존 추천 기능 보존. 멘트 source_ref/실제 이력 없으면 HOLD, 근거 없는 관심 단정 차단.
+- 실제 서로 다른 3고객 회수/비교 결과는 CENTRAL customer_pipeline/CONTACT_COPY_CHECKPOINT.md 및 contact_copy_validation.json에 보존.
+- 실제 branchCustomer→prepareContactCopy 연결 및 native CLI 검증. 고객 답변 전 발송 허용 없음.
+- 문장 제약 검증과 실제 통화 효과는 별개. 일반 Chat 자동 적용은 NOT_VERIFIED.
+- 원격 승격 전 상태: LOCAL_VALIDATION / PUBLICATION_PENDING. 본 변경 commit의 SHA/file read-back으로 원격 저장을 별도 확인.
+- NEXT_START: 정상 push/read-back. 기존 Android/다른 TOOL/278개 archive 재검사 없음.
+
 - 작업명: 42번 고객 안내
 - 상태: PASS (실제 사례 1건 제한 검증)
 - Source of Truth: `docs/UNIFIED_CUSTOMER_GUIDANCE_RULES.md`

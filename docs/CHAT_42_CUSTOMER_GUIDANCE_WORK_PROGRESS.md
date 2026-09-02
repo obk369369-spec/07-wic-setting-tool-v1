@@ -151,9 +151,7 @@
 - 중앙마스터 보강 Commit SHA: `1b8ccafcfc1257d28477ee3ba5125c53452efdef`.
 - 현재 김명곤 안내서는 사용자 실제 화면 검수 전이므로 최종 PASS 아님.
 
-
 ## 2026-08-31 — 41/42 선조회·생성 연결부 증분 작업
-
 - 기존 PASS/VERIFIED 테스트는 SKIP_REUSE. 전수감사·기존 데이터 복원·실제 발송 없음.
 - 최신 CENTRAL/각 TOOL MASTER·checkpoint·실제 피드백·CLEAN 고객 MASTER를 revision 고정으로 읽고 동일 snapshot을 생성에 전달하는 native entry 추가.
 - 이번 native 검증은 GitHub connector로 회수한 정본 snapshot transport replay이며 shell private repo 인증 E2E가 아님.
@@ -165,9 +163,7 @@
 - 중앙 증거: customer_pipeline/TOOL041_042_AUTOMATION_20260831.json.
 - TOOL042: `scripts/customer_work_start.js`; 기존 branch CLI도 이 entry 사용. 9-source preflight→generation. FAIL turns/cue_card 누출 제거 및 자료 paid/tradable/source 필수화. 변경부 5개 검사 PASS; ROB-010 현재 경로는 CURRENT_MASTER_ID_NOT_UNIQUE HOLD. 과거 교정 1회는 DRAFT_VALIDATED이며 실제 고객 PASS 아님.
 
-
 ## 2026-08-31 — 단일 FAIL-CLOSED 출력 경계 연결
-
 - 기존 c53e4b142ae6bc8f71a5572e388188bc0f660c7f PASS는 SKIP_REUSE; 전수조사/기존 fixture 재실행 없음.
 - CENTRAL `customer_pipeline/customer_release_gate.py` 동일 코드가 41·42에 배포되며, 선조회 source와 구현 본문 불일치 시 HOLD.
 - 공개 native 진입점과 guidance emit 경로는 공통 최종 게이트를 거친다. 기존 내부 생성기/format test는 출력 허가가 아니다.
@@ -186,3 +182,10 @@
 - 고객 직접 요청축: ISO 22821 산업수요, NFRP 강도측정, NFRP 국내외 시장 특히 운송·수송·모빌리티, ASTM C297 산업수요, 우주항공 국제·국내 표준, CFRP/NFRP 복합재 시험평가.
 - 중복 제외 확정: 과거 안내 `Natural Fiber Reinforced Plastic Market Research Report...`, 과거 안내 `Aerospace Floor Panels Market Size & Share...`, 실제 구매 `Global Structural Core Materials Market Size By Product...`.
 - 현재 안내서 상태: 신규 3종을 2026 발행 + 서로 다른 거래 발행사 + 원 발행사 exact TOC + 기제시/기구매 중복 없음 기준으로 재선정/검증 중. 실제 고객 출력 게이트 PASS 전에는 최종 안내서로 표시하지 않는다.
+
+## 2026-09-02 — 분야중복 차단 및 다음 구매 가능성 재선정
+- 중앙마스터 §47을 추가하여 시장보고서·자료 **안내서를 실제로 만드는 모든 고객 안내 대화창/작업에만** 공통 적용하고, 안내서와 무관한 다른 작업에는 확장 적용하지 않는다.
+- 중복판정 범위를 제목/URL에서 `분야·핵심주제`까지 확장. 실제 납품·구매된 분야는 `충족 분야`로 잠그고, 같은 수준의 유사 보고서를 다시 추천하면 FAIL로 처리한다.
+- 첨부메일·매일장부·견적·구매·납품·회신을 먼저 읽고 `충족 분야 / 열린 과거 관심 / 현재 온라인 사업축 / 인접 확장분야 / 제외분야`를 분리한 뒤 다음 구매 가능성을 우선 탐색한다.
+- 김지혜 사례에서 기존 `복합재 일반 / 시험평가 / Structural Core Materials` 반복 추천은 폐기. 조직의 2026 실제 사업과 연결해 `수소 저장용 고압 복합재 탱크`, `AL/CFRTP 하이브리드·고속접합/열가소성 복합재 양산`, `복합재 순환·재활용 및 회수소재 응용`처럼 과거 구매의 연장선이지만 새 구매 이유가 있는 축으로 다시 선정한다.
+- 중앙마스터 Commit SHA: `eb8b462a3a4538035d79ddfdfa49f9aa7892eca2`; 원격 read-back master blob SHA: `b6a37611c626edb2b9177441e74240c132722364`.

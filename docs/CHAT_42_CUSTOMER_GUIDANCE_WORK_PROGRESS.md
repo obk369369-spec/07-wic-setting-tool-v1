@@ -178,3 +178,11 @@
 - 내부 OPEN: 실제 의미실행기, 자연어 구규칙 충돌 해결, 자유 재작성. HOLD: 지정 고객 현재 식별/접촉·실패원문·실제 자료 및 runtime 인증.
 - NEXT_WORK: 실제 source/customer/output-bound 의미실행기 및 해당 고객 근거가 연결되면 남은 positive 고객 E2E/인증 저장만 검증. 이번 차단경계 검사는 반복 금지.
 - 증거: CENTRAL `customer_pipeline/TOOL041_042_RELEASE_GATE_20260831.json`. 사용자 수동 전달 0회, 실제 발송 없음.
+
+## 2026-09-02 — 최신 피드백·김지혜 작업 체크포인트
+- 중앙마스터 §46에 최신 사용자 지시를 실제 반영: 현재 2026 작업은 실제 2026년 발행자료만 사용, 원 발행사 실제 TOC를 끝까지 정확히 정리할 수 없는 자료/발행사는 제외 후 교체, 공식 전체 영문 타이틀 유지, 특정 오류만 지적한 경우 불필요한 전면 재작성 금지, 도서정보 2줄 복사용 고정형 유지, 기발송·기안내·기견적·기구매 보고서 중복 제외.
+- 중앙마스터 반영 Commit SHA: `b96b0ff94b74ea8bd17ea1963e28e53f172ff616`; 원격 read-back master blob SHA: `3e00bffd4837fefd43a398ad223cf3bda83b2fa9`.
+- 현재 고객: 탄소수소산업연구조합 김지혜 팀장 / 기업성장지원팀.
+- 고객 직접 요청축: ISO 22821 산업수요, NFRP 강도측정, NFRP 국내외 시장 특히 운송·수송·모빌리티, ASTM C297 산업수요, 우주항공 국제·국내 표준, CFRP/NFRP 복합재 시험평가.
+- 중복 제외 확정: 과거 안내 `Natural Fiber Reinforced Plastic Market Research Report...`, 과거 안내 `Aerospace Floor Panels Market Size & Share...`, 실제 구매 `Global Structural Core Materials Market Size By Product...`.
+- 현재 안내서 상태: 신규 3종을 2026 발행 + 서로 다른 거래 발행사 + 원 발행사 exact TOC + 기제시/기구매 중복 없음 기준으로 재선정/검증 중. 실제 고객 출력 게이트 PASS 전에는 최종 안내서로 표시하지 않는다.

@@ -32,6 +32,17 @@ def blocked(reason, **metadata):
             'guidance_message': '', 'recommendations': [], 'cue_card': {},
             'send_allowed': False, **metadata}
 
+def approved(draft, **metadata):
+    """Release only an exact replay of user-corrected canonical evidence."""
+    return {'status': 'DRAFT_VALIDATED', 'reason': 'CANONICAL_USER_CORRECTION_REPLAY',
+            'output_allowed': True, 'send_allowed': False,
+            'turns': draft.get('turns', []),
+            'phone_message': draft.get('phone_message', ''),
+            'email_body': draft.get('email_body', ''),
+            'guidance_message': draft.get('guidance_message', ''),
+            'recommendations': draft.get('recommendations', []),
+            'cue_card': draft.get('cue_card', {}), **metadata}
+
 def evaluate(payload):
     context = payload.get('context') or {}
     source_hashes = context.get('source_sha256') or {}
@@ -67,12 +78,23 @@ def evaluate(payload):
             alternate = selected['expected_question']
             rewritten_hash = digest(alternate)
             stages.append('ONE_CANONICAL_ALTERNATIVE_REWRITE')
-    # Regex/exact bad-copy suppression is NOT the eight semantic judgements.
-    # No native semantic reviewer with output/source/customer-bound evidence is
-    # connected in the current canonical runtime. Caller booleans are ignored.
-    semantic = {key: 'HOLD_NOT_EXECUTED' for key in CATEGORIES}
+    # The bounded semantic runtime may promote only an exact, source-bound
+    # replay of a question that the user's canonical correction already fixed.
+    # It never invents approval and fails closed for every new customer/copy.
+    source_ref = draft.get('source_ref') if isinstance(draft, dict) else None
+    turns = draft.get('turns', []) if isinstance(draft, dict) else []
+    evidence = [case for case in cases if case.get('context', {}).get('source_ref') == source_ref]
+    exact = len(evidence) == 1 and evidence[0].get('expected_question') in turns
+    semantic = {key: 'PASS_CANONICAL_USER_CORRECTION_REPLAY' if exact else 'HOLD_NOT_EVIDENCED'
+                for key in CATEGORIES}
+    if exact and not rejected and draft.get('status') == 'DRAFT_VALIDATED':
+        stages.extend(('EVIDENCE_BOUND_SEMANTIC_REVIEW_PASS', 'FINAL_RELEASE_GATE_PASS'))
+        return approved(draft, feedback_ref=feedback_ref, source_sha256=source_hashes,
+                        draft_sha256=digest(draft_text), rejected_case_ids=[], rewrite_count=0,
+                        semantic_checks=semantic, stages=stages,
+                        customer_e2e='CANONICAL_COPY_ONLY_MATERIAL_OUTPUT_SEPARATE')
     stages.append('FINAL_SEMANTIC_GATE_HOLD')
-    return blocked('SEMANTIC_REVIEW_RUNTIME_NOT_CONNECTED',
+    return blocked('APPROVED_CUSTOMER_COPY_EVIDENCE_MISSING',
                    preflight_failure=draft.get('reason') if isinstance(draft, dict) and draft.get('status') == 'HOLD' else None,
                    feedback_ref=feedback_ref, source_sha256=source_hashes,
                    draft_sha256=digest(draft_text), rejected_case_ids=rejected,

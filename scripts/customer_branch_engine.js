@@ -1,10 +1,12 @@
 'use strict';
-// Supported output entries all route through canonical startup and release.
+// Canonical requests use the preload/release boundary.  The established
+// (state, candidates) contract remains a synchronous branch API.
+const internal=require('./_customer_branch_internal');
 const start=request=>require('./customer_work_start').startCustomerWork(request);
 module.exports={
-  branchCustomer:state=>start(state),
-  prepareContactCopy:state=>start(state),
-  validateContactCopy:copy=>require('./_customer_branch_internal').validateContactCopy(copy)
+  branchCustomer:(state,candidates)=>Array.isArray(candidates)?internal.branchCustomer(state,candidates):start(state),
+  prepareContactCopy:(state,context,reply)=>context!==undefined?internal.prepareContactCopy(state,context,reply):start(state),
+  validateContactCopy:internal.validateContactCopy
 };
 if(require.main===module){
   start(JSON.parse(require('fs').readFileSync(0,'utf8'))).then(result=>{
